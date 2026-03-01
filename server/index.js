@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import categoryRoutes from './routes/categories.js';
 import itemRoutes from './routes/items.js';
+import searchRoutes from './routes/search.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -23,6 +24,7 @@ app.use('/api/categories', categoryRoutes);
 // but DELETE is at /api/items/:id
 app.use('/api/categories', itemRoutes);
 app.use('/api/items', itemRoutes);
+app.use('/api/search', searchRoutes);
 
 // Serve static React build in production
 const publicDir = path.join(__dirname, 'public');

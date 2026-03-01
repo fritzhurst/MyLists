@@ -14,8 +14,9 @@ import {
 } from '@dnd-kit/sortable';
 import DraggableItem from './DraggableItem.jsx';
 import AddItemForm from './AddItemForm.jsx';
+import SearchAddForm from './SearchAddForm.jsx';
 
-function ListContainer({ items, onAddItem, onDeleteItem, onReorder }) {
+function ListContainer({ items, categoryType, onAddItem, onDeleteItem, onReorder }) {
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -35,7 +36,11 @@ function ListContainer({ items, onAddItem, onDeleteItem, onReorder }) {
 
   return (
     <div className="list-container">
-      <AddItemForm onAddItem={onAddItem} />
+      {categoryType === 'generic' ? (
+        <AddItemForm onAddItem={onAddItem} />
+      ) : (
+        <SearchAddForm categoryType={categoryType} onAddItem={onAddItem} />
+      )}
 
       <DndContext
         sensors={sensors}
@@ -47,6 +52,7 @@ function ListContainer({ items, onAddItem, onDeleteItem, onReorder }) {
             <DraggableItem
               key={item.id}
               item={item}
+              categoryType={categoryType}
               onDelete={onDeleteItem}
             />
           ))}

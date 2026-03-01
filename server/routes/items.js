@@ -7,13 +7,16 @@ const router = Router();
 router.get('/:categoryId/items', (req, res) => {
   const { categoryId } = req.params;
   const items = db.prepare('SELECT * FROM items WHERE category_id = ? ORDER BY sort_order').all(categoryId);
+  items.forEach(item => {
+    if (item.metadata) item.metadata = JSON.parse(item.metadata);
+  });
   res.json(items);
 });
 
 // POST /api/categories/:categoryId/items — add an item to a category
 router.post('/:categoryId/items', (req, res) => {
   const { categoryId } = req.params;
-  const { text } = req.body;
+  const { text, metadata } = req.body;
 
   if (!text || !text.trim()) {
     return res.status(400).json({ error: 'Text is required' });
@@ -24,10 +27,12 @@ router.post('/:categoryId/items', (req, res) => {
     return res.status(404).json({ error: 'Category not found' });
   }
 
+  const metadataJson = metadata ? JSON.stringify(metadata) : null;
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM items WHERE category_id = ?').get(categoryId);
-  const result = db.prepare('INSERT INTO items (category_id, text, sort_order) VALUES (?, ?, ?)').run(categoryId, text.trim(), maxOrder.max_order + 1);
+  const result = db.prepare('INSERT INTO items (category_id, text, sort_order, metadata) VALUES (?, ?, ?, ?)').run(categoryId, text.trim(), maxOrder.max_order + 1, metadataJson);
 
   const item = db.prepare('SELECT * FROM items WHERE id = ?').get(result.lastInsertRowid);
+  if (item.metadata) item.metadata = JSON.parse(item.metadata);
   res.status(201).json(item);
 });
 

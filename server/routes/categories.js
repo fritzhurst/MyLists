@@ -11,13 +11,16 @@ router.get('/', (req, res) => {
 
 // POST /api/categories — create a new category
 router.post('/', (req, res) => {
-  const { name } = req.body;
+  const { name, type } = req.body;
   if (!name || !name.trim()) {
     return res.status(400).json({ error: 'Name is required' });
   }
 
+  const validTypes = ['generic', 'books', 'movies', 'tvshows'];
+  const categoryType = validTypes.includes(type) ? type : 'generic';
+
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM categories').get();
-  const result = db.prepare('INSERT INTO categories (name, sort_order) VALUES (?, ?)').run(name.trim(), maxOrder.max_order + 1);
+  const result = db.prepare('INSERT INTO categories (name, sort_order, type) VALUES (?, ?, ?)').run(name.trim(), maxOrder.max_order + 1, categoryType);
 
   const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(category);

@@ -27,8 +27,11 @@ function App() {
     }
   }, [activeCategoryId]);
 
-  const handleAddCategory = useCallback(async (name) => {
-    const cat = await api.createCategory(name);
+  const activeCategory = categories.find(c => c.id === activeCategoryId);
+  const activeCategoryType = activeCategory?.type || 'generic';
+
+  const handleAddCategory = useCallback(async (name, type) => {
+    const cat = await api.createCategory(name, type);
     setCategories((prev) => [...prev, cat]);
     setActiveCategoryId(cat.id);
   }, []);
@@ -45,9 +48,9 @@ function App() {
     });
   }, [activeCategoryId]);
 
-  const handleAddItem = useCallback(async (text) => {
+  const handleAddItem = useCallback(async (text, metadata) => {
     if (activeCategoryId == null) return;
-    const item = await api.createItem(activeCategoryId, text);
+    const item = await api.createItem(activeCategoryId, text, metadata || null);
     setItems((prev) => [...prev, item]);
   }, [activeCategoryId]);
 
@@ -75,6 +78,7 @@ function App() {
       {activeCategoryId != null && (
         <ListContainer
           items={items}
+          categoryType={activeCategoryType}
           onAddItem={handleAddItem}
           onDeleteItem={handleDeleteItem}
           onReorder={handleReorder}

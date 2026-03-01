@@ -26,4 +26,15 @@ db.exec(`
   );
 `);
 
+// Migrations: add type and metadata columns (safe, idempotent)
+const catColumns = db.prepare("PRAGMA table_info(categories)").all();
+if (!catColumns.find(c => c.name === 'type')) {
+  db.exec("ALTER TABLE categories ADD COLUMN type TEXT NOT NULL DEFAULT 'generic'");
+}
+
+const itemColumns = db.prepare("PRAGMA table_info(items)").all();
+if (!itemColumns.find(c => c.name === 'metadata')) {
+  db.exec("ALTER TABLE items ADD COLUMN metadata TEXT DEFAULT NULL");
+}
+
 export default db;
