@@ -36,7 +36,49 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - A free [TMDB API key](https://www.themoviedb.org/settings/api) (for Movies/TV search — Books work without it)
 
-### Setup
+### Option A: Pull from GitHub Container Registry (easiest)
+
+No cloning or building required — just pull and run:
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/fritzhurst/mylists:latest
+
+# Create a volume for persistent data
+docker volume create mylists-data
+
+# Run the container
+docker run -d \
+  --name mylists \
+  -p 6001:3000 \
+  -v mylists-data:/app/data \
+  -e NODE_ENV=production \
+  -e DB_PATH=/app/data/mylists.db \
+  -e TMDB_API_KEY=your_tmdb_api_key_here \
+  -e JWT_SECRET=your-secret-here \
+  ghcr.io/fritzhurst/mylists:latest
+```
+
+To include email support, add the SMTP flags:
+```bash
+docker run -d \
+  --name mylists \
+  -p 6001:3000 \
+  -v mylists-data:/app/data \
+  -e NODE_ENV=production \
+  -e DB_PATH=/app/data/mylists.db \
+  -e TMDB_API_KEY=your_tmdb_api_key_here \
+  -e JWT_SECRET=your-secret-here \
+  -e SMTP_USER=your-gmail@gmail.com \
+  -e SMTP_PASS=your-gmail-app-password \
+  -e SMTP_FROM=your-gmail@gmail.com \
+  -e APP_URL=http://localhost:6001 \
+  ghcr.io/fritzhurst/mylists:latest
+```
+
+Then open **http://localhost:6001** and log in with `admin` / `admin`.
+
+### Option B: Build from Source
 
 1. Clone the repo:
    ```bash
