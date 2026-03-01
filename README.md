@@ -47,7 +47,7 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
    docker compose up --build
    ```
 
-4. Open **http://localhost:3000**
+4. Open **http://localhost:6000**
 
 ### Stopping
 
