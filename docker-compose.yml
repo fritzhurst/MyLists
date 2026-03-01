@@ -1,0 +1,13 @@
+services:
+  mylists:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - mylists-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DB_PATH=/app/data/mylists.db
+
+volumes:
+  mylists-data:
