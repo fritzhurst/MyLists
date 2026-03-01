@@ -58,9 +58,54 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
    JWT_SECRET=your-secret-here
    ```
 
-3. Build and run:
+3. Build and run with **Docker Compose** (recommended):
    ```bash
    docker compose up --build
+   ```
+
+   Or with **Docker Run**:
+   ```bash
+   # Build the image
+   docker build -t mylists .
+
+   # Create a volume for persistent data
+   docker volume create mylists-data
+
+   # Run the container
+   docker run -d \
+     --name mylists \
+     -p 6001:3000 \
+     -v mylists-data:/app/data \
+     -e NODE_ENV=production \
+     -e DB_PATH=/app/data/mylists.db \
+     -e TMDB_API_KEY=your_tmdb_api_key_here \
+     -e JWT_SECRET=your-secret-here \
+     mylists
+   ```
+
+   To include email support, add the SMTP flags:
+   ```bash
+   docker run -d \
+     --name mylists \
+     -p 6001:3000 \
+     -v mylists-data:/app/data \
+     -e NODE_ENV=production \
+     -e DB_PATH=/app/data/mylists.db \
+     -e TMDB_API_KEY=your_tmdb_api_key_here \
+     -e JWT_SECRET=your-secret-here \
+     -e SMTP_USER=your-gmail@gmail.com \
+     -e SMTP_PASS=your-gmail-app-password \
+     -e SMTP_FROM=your-gmail@gmail.com \
+     -e APP_URL=http://localhost:6001 \
+     mylists
+   ```
+
+   To stop and manage a `docker run` container:
+   ```bash
+   docker stop mylists        # Stop the container
+   docker start mylists       # Restart it
+   docker rm mylists          # Remove the container (data is kept in the volume)
+   docker volume rm mylists-data  # Delete all data
    ```
 
 4. Open **http://localhost:6001**
