@@ -2,7 +2,7 @@ services:
   mylists:
     build: .
     ports:
-      - "6000:3000"
+      - "6001:3000"
     volumes:
       - mylists-data:/app/data
     environment:
@@ -13,7 +13,7 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
       - SMTP_FROM=${SMTP_FROM}
-      - APP_URL=${APP_URL:-http://localhost:6000}
+      - APP_URL=${APP_URL:-http://localhost:6001}
 
 volumes:
   mylists-data:

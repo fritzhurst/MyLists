@@ -52,7 +52,7 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
    SMTP_USER=your-gmail@gmail.com
    SMTP_PASS=your-gmail-app-password
    SMTP_FROM=your-gmail@gmail.com
-   APP_URL=http://localhost:6000
+   APP_URL=http://localhost:6001
 
    # Optional: JWT secret (defaults to a built-in value)
    JWT_SECRET=your-secret-here
@@ -63,7 +63,7 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
    docker compose up --build
    ```
 
-4. Open **http://localhost:6000**
+4. Open **http://localhost:6001**
 
 5. Log in with the default admin account:
    - **Username:** `admin`
