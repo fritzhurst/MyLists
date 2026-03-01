@@ -3,13 +3,15 @@ import db from '../db.js';
 
 const router = Router();
 
-// GET /api/categories — list all categories ordered by sort_order
+// GET /api/categories — list categories for the logged-in user
 router.get('/', (req, res) => {
-  const categories = db.prepare('SELECT * FROM categories ORDER BY sort_order').all();
+  const categories = db.prepare(
+    'SELECT * FROM categories WHERE user_id = ? ORDER BY sort_order'
+  ).all(req.user.id);
   res.json(categories);
 });
 
-// POST /api/categories — create a new category
+// POST /api/categories — create a new category for the logged-in user
 router.post('/', (req, res) => {
   const { name, type } = req.body;
   if (!name || !name.trim()) {
@@ -19,8 +21,12 @@ router.post('/', (req, res) => {
   const validTypes = ['generic', 'books', 'movies', 'tvshows'];
   const categoryType = validTypes.includes(type) ? type : 'generic';
 
-  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM categories').get();
-  const result = db.prepare('INSERT INTO categories (name, sort_order, type) VALUES (?, ?, ?)').run(name.trim(), maxOrder.max_order + 1, categoryType);
+  const maxOrder = db.prepare(
+    'SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM categories WHERE user_id = ?'
+  ).get(req.user.id);
+  const result = db.prepare(
+    'INSERT INTO categories (name, sort_order, type, user_id) VALUES (?, ?, ?, ?)'
+  ).run(name.trim(), maxOrder.max_order + 1, categoryType, req.user.id);
 
   const category = db.prepare('SELECT * FROM categories WHERE id = ?').get(result.lastInsertRowid);
   res.status(201).json(category);
@@ -29,7 +35,9 @@ router.post('/', (req, res) => {
 // DELETE /api/categories/:id — delete a category and its items (cascade)
 router.delete('/:id', (req, res) => {
   const { id } = req.params;
-  const result = db.prepare('DELETE FROM categories WHERE id = ?').run(id);
+  const result = db.prepare(
+    'DELETE FROM categories WHERE id = ? AND user_id = ?'
+  ).run(id, req.user.id);
 
   if (result.changes === 0) {
     return res.status(404).json({ error: 'Category not found' });

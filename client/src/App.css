@@ -17,10 +17,52 @@ body {
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 20px;
   color: #1a1a2e;
   font-size: 1.8rem;
+  margin: 0;
+}
+
+/* App Header */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-info {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.header-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: #555;
+  transition: background 0.15s;
+}
+
+.header-btn:hover {
+  background: #f0f0f0;
+}
+
+.header-btn-logout {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.header-btn-logout:hover {
+  background: #fdf0ef;
 }
 
 /* Tab Bar */
@@ -376,4 +418,246 @@ h1 {
   color: #999;
   padding: 30px;
   font-style: italic;
+}
+
+/* Login Page */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.login-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-card h1 {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-card input {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: #1a1a2e;
+}
+
+.login-card button {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: #1a1a2e;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.15s;
+}
+
+.login-card button:hover {
+  background: #16213e;
+}
+
+.login-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-error {
+  background: #fdf0ef;
+  color: #e74c3c;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* Settings / Admin Page */
+.settings-page {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.settings-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.settings-header h2 {
+  color: #1a1a2e;
+  font-size: 1.4rem;
+}
+
+.settings-close {
+  border: none;
+  background: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  padding: 4px 8px;
+}
+
+.settings-close:hover {
+  color: #333;
+}
+
+.settings-user {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.settings-form {
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.settings-form:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.settings-form h3 {
+  color: #1a1a2e;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.settings-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.settings-form input {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  margin-bottom: 8px;
+}
+
+.settings-form input:focus {
+  outline: none;
+  border-color: #1a1a2e;
+}
+
+.settings-form button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #1a1a2e;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.settings-form button:hover {
+  background: #16213e;
+}
+
+.settings-row {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-row input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.settings-hint {
+  color: #888;
+  font-size: 0.8rem;
+  margin-top: 6px;
+}
+
+.settings-success {
+  background: #eafbe7;
+  color: #27ae60;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+/* User list in admin */
+.user-list {
+  margin-top: 16px;
+}
+
+.user-list h3 {
+  color: #1a1a2e;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  margin-bottom: 4px;
+}
+
+.user-email {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.user-role {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e8e8e8;
+  color: #555;
+  text-transform: uppercase;
+}
+
+.user-delete {
+  border: none;
+  background: none;
+  color: #ccc;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.user-delete:hover {
+  color: #e74c3c;
 }

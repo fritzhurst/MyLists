@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { requireAuth } from './middleware/auth.js';
+import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
 import itemRoutes from './routes/items.js';
 import searchRoutes from './routes/search.js';
@@ -18,13 +20,14 @@ if (process.env.NODE_ENV !== 'production') {
   app.use(cors());
 }
 
-// API routes
-app.use('/api/categories', categoryRoutes);
-// Items routes are nested under categories for GET/POST/reorder,
-// but DELETE is at /api/items/:id
-app.use('/api/categories', itemRoutes);
-app.use('/api/items', itemRoutes);
-app.use('/api/search', searchRoutes);
+// Public routes (no auth)
+app.use('/api/auth', authRoutes);
+
+// Protected API routes
+app.use('/api/categories', requireAuth, categoryRoutes);
+app.use('/api/categories', requireAuth, itemRoutes);
+app.use('/api/items', requireAuth, itemRoutes);
+app.use('/api/search', requireAuth, searchRoutes);
 
 // Serve static React build in production
 const publicDir = path.join(__dirname, 'public');

@@ -1,7 +1,13 @@
 import { Router } from 'express';
+import db from '../db.js';
 
 const router = Router();
-const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
+const DEFAULT_TMDB_KEY = process.env.TMDB_API_KEY || '';
+
+function getTmdbKey(userId) {
+  const user = db.prepare('SELECT tmdb_api_key FROM users WHERE id = ?').get(userId);
+  return user?.tmdb_api_key || DEFAULT_TMDB_KEY;
+}
 
 // --- Books: Open Library ---
 router.get('/books', async (req, res) => {
@@ -57,10 +63,12 @@ router.get('/books/:workId/details', async (req, res) => {
 router.get('/movies', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: 'Query is required' });
-  if (!TMDB_API_KEY) return res.status(500).json({ error: 'TMDB API key not configured' });
+
+  const apiKey = getTmdbKey(req.user.id);
+  if (!apiKey) return res.status(500).json({ error: 'TMDB API key not configured' });
 
   try {
-    const url = `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&page=1`;
+    const url = `https://api.themoviedb.org/3/search/movie?api_key=${apiKey}&query=${encodeURIComponent(q)}&page=1`;
     const response = await fetch(url);
     const data = await response.json();
 
@@ -87,10 +95,11 @@ router.get('/movies', async (req, res) => {
 // Fetch movie details (director, runtime)
 router.get('/movies/:tmdbId/details', async (req, res) => {
   const { tmdbId } = req.params;
-  if (!TMDB_API_KEY) return res.status(500).json({ error: 'TMDB API key not configured' });
+  const apiKey = getTmdbKey(req.user.id);
+  if (!apiKey) return res.status(500).json({ error: 'TMDB API key not configured' });
 
   try {
-    const url = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${TMDB_API_KEY}&append_to_response=credits`;
+    const url = `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&append_to_response=credits`;
     const response = await fetch(url);
     const data = await response.json();
 
@@ -111,10 +120,12 @@ router.get('/movies/:tmdbId/details', async (req, res) => {
 router.get('/tv', async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: 'Query is required' });
-  if (!TMDB_API_KEY) return res.status(500).json({ error: 'TMDB API key not configured' });
+
+  const apiKey = getTmdbKey(req.user.id);
+  if (!apiKey) return res.status(500).json({ error: 'TMDB API key not configured' });
 
   try {
-    const url = `https://api.themoviedb.org/3/search/tv?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(q)}&page=1`;
+    const url = `https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encodeURIComponent(q)}&page=1`;
     const response = await fetch(url);
     const data = await response.json();
 
@@ -141,10 +152,11 @@ router.get('/tv', async (req, res) => {
 // Fetch TV show details (creator, network, seasons, episodes, status)
 router.get('/tv/:tmdbId/details', async (req, res) => {
   const { tmdbId } = req.params;
-  if (!TMDB_API_KEY) return res.status(500).json({ error: 'TMDB API key not configured' });
+  const apiKey = getTmdbKey(req.user.id);
+  if (!apiKey) return res.status(500).json({ error: 'TMDB API key not configured' });
 
   try {
-    const url = `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${TMDB_API_KEY}`;
+    const url = `https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${apiKey}`;
     const response = await fetch(url);
     const data = await response.json();
 
