@@ -10,6 +10,10 @@ services:
       - DB_PATH=/app/data/mylists.db
       - TMDB_API_KEY=${TMDB_API_KEY}
       - JWT_SECRET=${JWT_SECRET:-mylists-production-secret}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - APP_URL=${APP_URL:-http://localhost:6000}
 
 volumes:
   mylists-data:

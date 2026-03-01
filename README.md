@@ -4,6 +4,8 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
 
 ## Features
 
+- **User Authentication** — JWT-based login with admin and regular user roles
+- **Multi-User** — Each user has their own private lists and categories
 - **Category Tabs** — Create multiple lists organized as tabs across the top
 - **Drag-and-Drop** — Reorder items by dragging them up or down
 - **Specialized List Types:**
@@ -11,16 +13,21 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
   - **Movies** — Type-ahead search via TMDB. Displays poster, director, runtime, rating, and overview on hover.
   - **TV Shows** — Type-ahead search via TMDB. Displays poster, creator, network, seasons, episodes, status, and rating on hover.
 - **Generic Lists** — Plain text lists for anything else (groceries, to-dos, etc.)
+- **Settings** — Users can change their password and set a personal TMDB API key
+- **Admin Panel** — Admin users can create/delete users
+- **Email Notifications** — Optional Gmail SMTP for sending welcome emails to new users
 - **Persistent Storage** — SQLite database on a Docker volume survives container restarts and rebuilds
 
 ## Tech Stack
 
-| Layer     | Technology                          |
-|-----------|-------------------------------------|
-| Backend   | Node.js, Express, better-sqlite3    |
-| Frontend  | React 18, Vite, @dnd-kit/sortable   |
-| Container | Docker (multi-stage build)           |
-| APIs      | Open Library (books), TMDB (movies/TV) |
+| Layer     | Technology                                  |
+|-----------|---------------------------------------------|
+| Backend   | Node.js, Express, better-sqlite3, JWT       |
+| Frontend  | React 18, Vite, @dnd-kit/sortable           |
+| Auth      | bcryptjs, jsonwebtoken                       |
+| Email     | Nodemailer (Gmail SMTP)                      |
+| Container | Docker (multi-stage build)                   |
+| APIs      | Open Library (books), TMDB (movies/TV)       |
 
 ## Quick Start
 
@@ -40,6 +47,15 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
 2. Create a `.env` file in the project root:
    ```
    TMDB_API_KEY=your_tmdb_api_key_here
+
+   # Optional: Gmail SMTP for sending welcome emails
+   SMTP_USER=your-gmail@gmail.com
+   SMTP_PASS=your-gmail-app-password
+   SMTP_FROM=your-gmail@gmail.com
+   APP_URL=http://localhost:6000
+
+   # Optional: JWT secret (defaults to a built-in value)
+   JWT_SECRET=your-secret-here
    ```
 
 3. Build and run:
@@ -48,6 +64,19 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
    ```
 
 4. Open **http://localhost:6000**
+
+5. Log in with the default admin account:
+   - **Username:** `admin`
+   - **Password:** `admin`
+
+### Email Setup (Optional)
+
+To enable welcome emails for new users:
+
+1. Go to your Google Account > Security > 2-Step Verification
+2. Under "App passwords", generate a new app password for "Mail"
+3. Add the app password to your `.env` file as `SMTP_PASS`
+4. Set `SMTP_USER` and `SMTP_FROM` to your Gmail address
 
 ### Stopping
 
@@ -63,19 +92,39 @@ docker compose down -v
 
 ## Usage
 
-1. Click the **+** button to create a new category
-2. Choose a type: **Generic**, **Books**, **Movies**, or **TV Shows**
-3. For specialized types, start typing a title — suggestions appear automatically
-4. Click a suggestion to add it to your list with full metadata
-5. Hover over an item to see its details (cover art, summary, ratings, etc.)
-6. Drag items by the handle (&#x2630;) to reorder
-7. Click **x** on a tab to delete a category and all its items
+1. Log in with admin credentials or a user account
+2. Click the **+** button to create a new category
+3. Choose a type: **Generic**, **Books**, **Movies**, or **TV Shows**
+4. For specialized types, start typing a title — suggestions appear automatically
+5. Click a suggestion to add it to your list with full metadata
+6. Hover over an item to see its details (cover art, summary, ratings, etc.)
+7. Drag items by the handle (&#x2630;) to reorder
+8. Click **x** on a tab to delete a category and all its items
+
+### Admin Functions
+
+- Click **Users** to manage user accounts
+- Add new users by email — they'll receive a welcome email (if SMTP is configured) with a temporary password
+- New users must change their password on first login
+
+### User Settings
+
+- Click **Settings** to change your password or set a personal TMDB API key
 
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET    | `/api/categories` | List all categories |
+| POST   | `/api/auth/login` | Login `{ email, password }` |
+| GET    | `/api/auth/me` | Get current user |
+| POST   | `/api/auth/register` | Admin: create user `{ email }` |
+| GET    | `/api/auth/users` | Admin: list users |
+| DELETE | `/api/auth/users/:id` | Admin: delete user |
+| POST   | `/api/auth/change-password` | Change password |
+| GET/PUT | `/api/auth/tmdb-key` | Get/set TMDB key |
+| GET    | `/api/auth/email-status` | Admin: email config status |
+| POST   | `/api/auth/test-email` | Admin: send test email |
+| GET    | `/api/categories` | List user's categories |
 | POST   | `/api/categories` | Create category `{ name, type }` |
 | DELETE | `/api/categories/:id` | Delete category + items |
 | GET    | `/api/categories/:id/items` | List items for a category |
@@ -94,24 +143,33 @@ MyLists/
 ├── docker-compose.yml      # Service + volume config
 ├── server/
 │   ├── index.js            # Express entry point
-│   ├── db.js               # SQLite connection + schema
-│   └── routes/
-│       ├── categories.js   # Category CRUD
-│       ├── items.js        # Item CRUD + reorder
-│       └── search.js       # Search proxy (Open Library + TMDB)
+│   ├── db.js               # SQLite connection + schema + migrations
+│   ├── middleware/
+│   │   └── auth.js         # JWT auth middleware
+│   ├── routes/
+│   │   ├── auth.js         # Auth + user management endpoints
+│   │   ├── categories.js   # Category CRUD (user-scoped)
+│   │   ├── items.js        # Item CRUD + reorder (user-scoped)
+│   │   └── search.js       # Search proxy (Open Library + TMDB)
+│   └── services/
+│       └── email.js        # Nodemailer Gmail SMTP service
 └── client/
     ├── vite.config.js
     └── src/
-        ├── App.jsx         # Root state manager
-        ├── api.js          # API fetch wrappers
+        ├── App.jsx               # Root state manager + auth flow
+        ├── api.js                # API fetch wrappers + auth headers
         └── components/
-            ├── TabBar.jsx        # Category tabs + type picker
-            ├── Tab.jsx           # Single tab
-            ├── ListContainer.jsx # Drag-and-drop list
-            ├── DraggableItem.jsx # Sortable item + thumbnail
-            ├── AddItemForm.jsx   # Generic item input
-            ├── SearchAddForm.jsx # Type-ahead autocomplete
-            └── ItemPopover.jsx   # Hover metadata card
+            ├── LoginPage.jsx         # Login form
+            ├── ChangePasswordPage.jsx # Forced password change
+            ├── AdminPanel.jsx        # User management (admin)
+            ├── SettingsPage.jsx      # Password + TMDB key settings
+            ├── TabBar.jsx            # Category tabs + type picker
+            ├── Tab.jsx               # Single tab
+            ├── ListContainer.jsx     # Drag-and-drop list
+            ├── DraggableItem.jsx     # Sortable item + thumbnail
+            ├── AddItemForm.jsx       # Generic item input
+            ├── SearchAddForm.jsx     # Type-ahead autocomplete
+            └── ItemPopover.jsx       # Hover metadata card
 ```
 
 ## License

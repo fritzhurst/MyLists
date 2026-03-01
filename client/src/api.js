@@ -169,3 +169,21 @@ export async function getTmdbKey() {
   const res = await authFetch(`${BASE}/auth/tmdb-key`);
   return res.json();
 }
+
+// Email APIs
+export async function getEmailStatus() {
+  const res = await authFetch(`${BASE}/auth/email-status`);
+  return res.json();
+}
+
+export async function sendTestEmail(to) {
+  const res = await authFetch(`${BASE}/auth/test-email`, {
+    method: 'POST',
+    body: JSON.stringify({ to }),
+  });
+  if (!res.ok) {
+    const data = await res.json();
+    throw new Error(data.error || 'Failed to send test email');
+  }
+  return res.json();
+}

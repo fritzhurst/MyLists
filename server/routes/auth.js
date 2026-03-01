@@ -2,6 +2,7 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import db from '../db.js';
 import { generateToken, requireAuth, requireAdmin } from '../middleware/auth.js';
+import { sendWelcomeEmail, isEmailConfigured } from '../services/email.js';
 
 const router = Router();
 
@@ -49,7 +50,11 @@ router.post('/register', requireAuth, requireAdmin, (req, res) => {
   const result = db.prepare('INSERT INTO users (email, password, role, must_change_password) VALUES (?, ?, ?, 1)').run(email.trim(), tempPassword, 'user');
 
   const user = db.prepare('SELECT id, email, role, created_at FROM users WHERE id = ?').get(result.lastInsertRowid);
-  res.status(201).json(user);
+
+  // Send welcome email (non-blocking — don't fail the request if email fails)
+  sendWelcomeEmail(email.trim(), 'changeme').catch(() => {});
+
+  res.status(201).json({ ...user, emailSent: isEmailConfigured() });
 });
 
 // GET /api/auth/users — admin: list all users
@@ -96,6 +101,35 @@ router.post('/change-password', requireAuth, (req, res) => {
   const hash = bcrypt.hashSync(newPassword, 10);
   db.prepare('UPDATE users SET password = ?, must_change_password = 0 WHERE id = ?').run(hash, req.user.id);
   res.json({ message: 'Password updated' });
+});
+
+// GET /api/auth/email-status — admin: check if email is configured
+router.get('/email-status', requireAuth, requireAdmin, (req, res) => {
+  res.json({ configured: isEmailConfigured() });
+});
+
+// POST /api/auth/test-email — admin: send a test email
+router.post('/test-email', requireAuth, requireAdmin, async (req, res) => {
+  const { to } = req.body;
+  if (!to) return res.status(400).json({ error: 'Recipient email is required' });
+
+  if (!isEmailConfigured()) {
+    return res.status(400).json({ error: 'Email is not configured (set SMTP_USER and SMTP_PASS)' });
+  }
+
+  const { sendMail } = await import('../services/email.js');
+  const sent = await sendMail({
+    to,
+    subject: 'MyLists — Test Email',
+    text: 'This is a test email from MyLists. Email is working correctly!',
+    html: '<h2>MyLists</h2><p>This is a test email. Email is working correctly!</p>',
+  });
+
+  if (sent) {
+    res.json({ message: `Test email sent to ${to}` });
+  } else {
+    res.status(500).json({ error: 'Failed to send test email' });
+  }
 });
 
 // GET /api/auth/tmdb-key — get user's TMDB key
