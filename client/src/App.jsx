@@ -103,8 +103,9 @@ function App() {
   }, []);
 
   const handleReorder = useCallback(async (reorderedItems) => {
-    setItems(reorderedItems);
-    const orderedIds = reorderedItems.map((i) => i.id);
+    const updated = reorderedItems.map((item, idx) => ({ ...item, sort_order: idx }));
+    setItems(updated);
+    const orderedIds = updated.map((i) => i.id);
     await api.reorderItems(activeCategoryId, orderedIds);
   }, [activeCategoryId]);
 
