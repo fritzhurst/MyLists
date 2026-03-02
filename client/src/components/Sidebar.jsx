@@ -53,21 +53,6 @@ function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRe
           <h2>Lists</h2>
           <button className="sidebar-close-btn" onClick={onClose}>&times;</button>
         </div>
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={categories} strategy={verticalListSortingStrategy}>
-            <nav className="sidebar-nav">
-              {categories.map(cat => (
-                <SidebarItem
-                  key={cat.id}
-                  category={cat}
-                  isActive={cat.id === activeCategoryId}
-                  onSelect={() => { onSelect(cat.id); onClose(); }}
-                  onDelete={() => onDelete(cat.id)}
-                />
-              ))}
-            </nav>
-          </SortableContext>
-        </DndContext>
 
         <div className="sidebar-add">
           {adding ? (
@@ -94,6 +79,22 @@ function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRe
             <button className="sidebar-add-btn" onClick={() => setAdding(true)}>+ New List</button>
           )}
         </div>
+
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={categories} strategy={verticalListSortingStrategy}>
+            <nav className="sidebar-nav">
+              {categories.map(cat => (
+                <SidebarItem
+                  key={cat.id}
+                  category={cat}
+                  isActive={cat.id === activeCategoryId}
+                  onSelect={() => { onSelect(cat.id); onClose(); }}
+                  onDelete={() => onDelete(cat.id)}
+                />
+              ))}
+            </nav>
+          </SortableContext>
+        </DndContext>
       </aside>
     </>
   );

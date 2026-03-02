@@ -204,7 +204,7 @@ h1 {
 
 .sidebar-add {
   padding: 12px;
-  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
   flex-shrink: 0;
 }
 
@@ -297,6 +297,21 @@ h1 {
   border-radius: 4px;
   font-size: 0.85rem;
   background: #fff;
+}
+
+.renumber-btn {
+  padding: 4px 10px;
+  border: 1px solid #1a1a2e;
+  border-radius: 4px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.renumber-btn:hover {
+  background: #16213e;
 }
 
 /* Add Item Form */
@@ -393,11 +408,44 @@ h1 {
   text-decoration: underline;
 }
 
-.item-date {
-  font-size: 0.75rem;
-  color: #999;
-  white-space: nowrap;
+.item-dates {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
   flex-shrink: 0;
+}
+
+.item-release-date {
+  font-size: 0.75rem;
+  color: #777;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.item-date {
+  font-size: 0.7rem;
+  color: #aaa;
+  white-space: nowrap;
+}
+
+.item-indicators {
+  display: flex;
+  gap: 3px;
+  flex-shrink: 0;
+  cursor: pointer;
+  font-size: 0.85rem;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.item-indicators:hover {
+  opacity: 1;
+}
+
+.indicator-note,
+.indicator-attach {
+  font-size: 0.85rem;
 }
 
 .item-delete {
@@ -1080,7 +1128,7 @@ h1 {
     padding: 16px;
   }
 
-  .item-date {
+  .item-dates {
     display: none;
   }
 

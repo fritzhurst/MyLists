@@ -23,8 +23,20 @@ router.get('/:categoryId/items', (req, res) => {
   }
 
   const items = db.prepare('SELECT * FROM items WHERE category_id = ? ORDER BY sort_order').all(categoryId);
+  const noteCounts = db.prepare(
+    'SELECT item_id, COUNT(*) as cnt FROM notes WHERE item_id IN (SELECT id FROM items WHERE category_id = ?) GROUP BY item_id'
+  ).all(categoryId);
+  const attachCounts = db.prepare(
+    'SELECT item_id, COUNT(*) as cnt FROM attachments WHERE item_id IN (SELECT id FROM items WHERE category_id = ?) GROUP BY item_id'
+  ).all(categoryId);
+
+  const noteMap = Object.fromEntries(noteCounts.map(r => [r.item_id, r.cnt]));
+  const attachMap = Object.fromEntries(attachCounts.map(r => [r.item_id, r.cnt]));
+
   items.forEach(item => {
     if (item.metadata) item.metadata = JSON.parse(item.metadata);
+    item.note_count = noteMap[item.id] || 0;
+    item.attachment_count = attachMap[item.id] || 0;
   });
   res.json(items);
 });

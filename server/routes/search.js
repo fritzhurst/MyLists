@@ -24,6 +24,7 @@ router.get('/books', async (req, res) => {
       title: doc.title,
       author: (doc.author_name || []).join(', '),
       year: doc.first_publish_year || null,
+      releaseDate: doc.first_publish_year ? String(doc.first_publish_year) : null,
       coverUrl: doc.cover_i
         ? `https://covers.openlibrary.org/b/id/${doc.cover_i}-M.jpg`
         : null,
@@ -76,6 +77,7 @@ router.get('/movies', async (req, res) => {
       externalId: m.id,
       title: m.title,
       year: m.release_date ? m.release_date.substring(0, 4) : null,
+      releaseDate: m.release_date || null,
       overview: m.overview,
       rating: m.vote_average,
       posterUrl: m.poster_path
@@ -133,6 +135,7 @@ router.get('/tv', async (req, res) => {
       externalId: tv.id,
       title: tv.name,
       year: tv.first_air_date ? tv.first_air_date.substring(0, 4) : null,
+      releaseDate: tv.first_air_date || null,
       overview: tv.overview,
       rating: tv.vote_average,
       posterUrl: tv.poster_path
