@@ -3,7 +3,7 @@ import LoginPage from './components/LoginPage.jsx';
 import ChangePasswordPage from './components/ChangePasswordPage.jsx';
 import AdminPanel from './components/AdminPanel.jsx';
 import SettingsPage from './components/SettingsPage.jsx';
-import TabBar from './components/TabBar.jsx';
+import Sidebar from './components/Sidebar.jsx';
 import ListContainer from './components/ListContainer.jsx';
 import * as api from './api.js';
 
@@ -16,6 +16,7 @@ function App() {
   const [tempPassword, setTempPassword] = useState('');
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [activeCategoryId, setActiveCategoryId] = useState(null);
@@ -84,6 +85,12 @@ function App() {
     });
   }, [activeCategoryId]);
 
+  const handleReorderCategories = useCallback(async (reorderedCategories) => {
+    setCategories(reorderedCategories);
+    const orderedIds = reorderedCategories.map(c => c.id);
+    await api.reorderCategories(orderedIds);
+  }, []);
+
   const handleAddItem = useCallback(async (text, metadata) => {
     if (activeCategoryId == null) return;
     const item = await api.createItem(activeCategoryId, text, metadata || null);
@@ -129,7 +136,10 @@ function App() {
   return (
     <div className="app">
       <div className="app-header">
-        <h1>MyLists</h1>
+        <div className="header-left">
+          <button className="hamburger-btn" onClick={() => setSidebarOpen(true)}>&#9776;</button>
+          <h1>MyLists</h1>
+        </div>
         <div className="header-actions">
           <span className="user-info">{user.email}</span>
           {user.role === 'admin' && (
@@ -139,25 +149,35 @@ function App() {
           <button className="header-btn header-btn-logout" onClick={handleLogout}>Logout</button>
         </div>
       </div>
-      <TabBar
-        categories={categories}
-        activeCategoryId={activeCategoryId}
-        onSelect={setActiveCategoryId}
-        onAdd={handleAddCategory}
-        onDelete={handleDeleteCategory}
-      />
-      {activeCategoryId != null && (
-        <ListContainer
-          items={items}
-          categoryType={activeCategoryType}
-          onAddItem={handleAddItem}
-          onDeleteItem={handleDeleteItem}
-          onReorder={handleReorder}
+      <div className="app-body">
+        <Sidebar
+          categories={categories}
+          activeCategoryId={activeCategoryId}
+          onSelect={setActiveCategoryId}
+          onAdd={handleAddCategory}
+          onDelete={handleDeleteCategory}
+          onReorder={handleReorderCategories}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
         />
-      )}
-      {categories.length === 0 && (
-        <p className="empty-message">Create a category to get started!</p>
-      )}
+        <main className="main-content">
+          {activeCategoryId != null && (
+            <>
+              <h2 className="list-title">{activeCategory?.name}</h2>
+              <ListContainer
+                items={items}
+                categoryType={activeCategoryType}
+                onAddItem={handleAddItem}
+                onDeleteItem={handleDeleteItem}
+                onReorder={handleReorder}
+              />
+            </>
+          )}
+          {activeCategoryId == null && categories.length === 0 && (
+            <p className="empty-message">Create a list to get started!</p>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

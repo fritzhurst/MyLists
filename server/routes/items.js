@@ -1,5 +1,12 @@
 import { Router } from 'express';
+import fs from 'fs';
+import path from 'path';
 import db from '../db.js';
+
+const DATA_DIR = process.env.DB_PATH
+  ? path.dirname(process.env.DB_PATH)
+  : path.join(process.cwd(), 'data');
+const UPLOADS_DIR = path.join(DATA_DIR, 'uploads');
 
 const router = Router();
 
@@ -37,7 +44,7 @@ router.post('/:categoryId/items', (req, res) => {
 
   const metadataJson = metadata ? JSON.stringify(metadata) : null;
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM items WHERE category_id = ?').get(categoryId);
-  const result = db.prepare('INSERT INTO items (category_id, text, sort_order, metadata) VALUES (?, ?, ?, ?)').run(categoryId, text.trim(), maxOrder.max_order + 1, metadataJson);
+  const result = db.prepare("INSERT INTO items (category_id, text, sort_order, metadata, created_at) VALUES (?, ?, ?, ?, datetime('now'))").run(categoryId, text.trim(), maxOrder.max_order + 1, metadataJson);
 
   const item = db.prepare('SELECT * FROM items WHERE id = ?').get(result.lastInsertRowid);
   if (item.metadata) item.metadata = JSON.parse(item.metadata);
@@ -58,6 +65,11 @@ router.delete('/:id', (req, res) => {
   }
 
   db.prepare('DELETE FROM items WHERE id = ?').run(id);
+
+  // Clean up uploaded files for this item
+  const uploadsDir = path.join(UPLOADS_DIR, String(id));
+  fs.rm(uploadsDir, { recursive: true, force: true }, () => {});
+
   res.status(204).end();
 });
 

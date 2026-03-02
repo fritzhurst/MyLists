@@ -32,6 +32,25 @@ router.post('/', (req, res) => {
   res.status(201).json(category);
 });
 
+// PUT /api/categories/reorder — reorder categories for logged-in user
+router.put('/reorder', (req, res) => {
+  const { orderedIds } = req.body;
+
+  if (!Array.isArray(orderedIds)) {
+    return res.status(400).json({ error: 'orderedIds must be an array' });
+  }
+
+  const update = db.prepare('UPDATE categories SET sort_order = ? WHERE id = ? AND user_id = ?');
+  const reorderAll = db.transaction((ids, userId) => {
+    ids.forEach((id, index) => {
+      update.run(index, id, userId);
+    });
+  });
+
+  reorderAll(orderedIds, req.user.id);
+  res.sendStatus(200);
+});
+
 // DELETE /api/categories/:id — delete a category and its items (cascade)
 router.delete('/:id', (req, res) => {
   const { id } = req.params;

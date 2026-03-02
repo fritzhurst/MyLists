@@ -14,9 +14,9 @@ const detailFnMap = {
 };
 
 const placeholderMap = {
-  books: 'Search for a book...',
-  movies: 'Search for a movie...',
-  tvshows: 'Search for a TV show...',
+  books: 'Search or type a book title...',
+  movies: 'Search or type a movie title...',
+  tvshows: 'Search or type a TV show title...',
 };
 
 function SearchAddForm({ categoryType, onAddItem }) {
@@ -73,9 +73,17 @@ function SearchAddForm({ categoryType, onAddItem }) {
     setPicking(false);
   };
 
+  const handleManualAdd = (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    onAddItem(query.trim(), null);
+    setQuery('');
+    setResults([]);
+  };
+
   return (
     <div className="search-add-form">
-      <div className="add-item-form">
+      <form className="add-item-form" onSubmit={handleManualAdd}>
         <input
           type="text"
           value={query}
@@ -83,8 +91,9 @@ function SearchAddForm({ categoryType, onAddItem }) {
           placeholder={placeholderMap[categoryType] || 'Search...'}
           disabled={picking}
         />
+        <button type="submit" disabled={picking || !query.trim()}>Add</button>
         {loading && <span className="search-spinner">Searching...</span>}
-      </div>
+      </form>
 
       {results.length > 0 && !picking && (
         <ul className="search-results">
@@ -96,7 +105,7 @@ function SearchAddForm({ categoryType, onAddItem }) {
               <div className="search-result-info">
                 <strong>{r.title}</strong>
                 {r.year && <span className="search-result-year"> ({r.year})</span>}
-                {r.author && <span className="search-result-detail"> — {r.author}</span>}
+                {r.author && <span className="search-result-detail"> &mdash; {r.author}</span>}
               </div>
             </li>
           ))}

@@ -84,6 +84,13 @@ export async function deleteCategory(id) {
   await authFetch(`${BASE}/categories/${id}`, { method: 'DELETE' });
 }
 
+export async function reorderCategories(orderedIds) {
+  await authFetch(`${BASE}/categories/reorder`, {
+    method: 'PUT',
+    body: JSON.stringify({ orderedIds }),
+  });
+}
+
 // Item APIs
 export async function getItems(categoryId) {
   const res = await authFetch(`${BASE}/categories/${categoryId}/items`);
@@ -138,6 +145,46 @@ export async function getMovieDetails(tmdbId) {
 export async function getTVDetails(tmdbId) {
   const res = await authFetch(`${BASE}/search/tv/${tmdbId}/details`);
   return res.json();
+}
+
+// Notes & Attachments APIs
+export async function getItemNotes(itemId) {
+  const res = await authFetch(`${BASE}/items/${itemId}/notes`);
+  return res.json();
+}
+
+export async function addNote(itemId, content) {
+  const res = await authFetch(`${BASE}/items/${itemId}/notes`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+  return res.json();
+}
+
+export async function deleteNote(itemId, noteId) {
+  await authFetch(`${BASE}/items/${itemId}/notes/${noteId}`, { method: 'DELETE' });
+}
+
+export async function uploadAttachments(itemId, files) {
+  const formData = new FormData();
+  files.forEach(f => formData.append('files', f));
+
+  const token = getToken();
+  const res = await fetch(`${BASE}/items/${itemId}/attachments`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: formData,
+  });
+  if (res.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.reload();
+  }
+  return res.json();
+}
+
+export async function deleteAttachment(itemId, attachmentId) {
+  await authFetch(`${BASE}/items/${itemId}/attachments/${attachmentId}`, { method: 'DELETE' });
 }
 
 // Settings APIs

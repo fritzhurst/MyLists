@@ -56,6 +56,37 @@ const itemColumns = db.prepare("PRAGMA table_info(items)").all();
 if (!itemColumns.find(c => c.name === 'metadata')) {
   db.exec("ALTER TABLE items ADD COLUMN metadata TEXT DEFAULT NULL");
 }
+if (!itemColumns.find(c => c.name === 'created_at')) {
+  db.exec("ALTER TABLE items ADD COLUMN created_at TEXT DEFAULT NULL");
+  db.exec("UPDATE items SET created_at = datetime('now') WHERE created_at IS NULL");
+}
+
+// Create notes table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS notes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id     INTEGER NOT NULL,
+    content     TEXT    DEFAULT NULL,
+    created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+  );
+`);
+
+// Create attachments table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS attachments (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id       INTEGER NOT NULL,
+    note_id       INTEGER DEFAULT NULL,
+    filename      TEXT    NOT NULL,
+    original_name TEXT    NOT NULL,
+    mime_type     TEXT    NOT NULL,
+    size          INTEGER NOT NULL,
+    created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE SET NULL
+  );
+`);
 
 // Seed admin user if not exists
 const admin = db.prepare("SELECT id FROM users WHERE email = 'admin'").get();

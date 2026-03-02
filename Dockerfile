@@ -18,8 +18,8 @@ COPY server/ ./
 # Copy the built React app into the public folder Express serves
 COPY --from=client-build /build/dist ./public
 
-# Create the data directory for SQLite
-RUN mkdir -p /app/data
+# Create the data directory for SQLite and uploads
+RUN mkdir -p /app/data/uploads
 
 EXPOSE 3000
 

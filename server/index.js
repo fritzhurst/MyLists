@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
 import itemRoutes from './routes/items.js';
 import searchRoutes from './routes/search.js';
+import notesRoutes from './routes/notes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -27,7 +28,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/categories', requireAuth, categoryRoutes);
 app.use('/api/categories', requireAuth, itemRoutes);
 app.use('/api/items', requireAuth, itemRoutes);
+app.use('/api/items', requireAuth, notesRoutes);
 app.use('/api/search', requireAuth, searchRoutes);
+
+// Serve uploaded files (auth required)
+const dataDir = process.env.DB_PATH
+  ? path.dirname(process.env.DB_PATH)
+  : path.join(process.cwd(), 'data');
+app.use('/api/uploads', requireAuth, express.static(path.join(dataDir, 'uploads')));
 
 // Serve static React build in production
 const publicDir = path.join(__dirname, 'public');
