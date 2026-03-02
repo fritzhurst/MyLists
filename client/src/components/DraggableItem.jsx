@@ -65,12 +65,10 @@ function DraggableItem({ item, priority, categoryType, onDelete, dragDisabled, s
         >
           {item.text}
         </span>
-        <div className="item-dates">
-          {showReleaseDate && formattedRelease && (
-            <span className="item-release-date" title="Release date">{formattedRelease}</span>
-          )}
-          {formattedDate && <span className="item-date" title="Date added">{formattedDate}</span>}
-        </div>
+        {showReleaseDate && (
+          <span className="item-release-date" title="Release date">{formattedRelease || '—'}</span>
+        )}
+        <span className="item-date" title="Date added">{formattedDate || '—'}</span>
         {(hasNotes || hasAttachments) && (
           <span className="item-indicators" onClick={() => setShowDetail(true)}>
             {hasNotes && <span className="indicator-note" title={`${item.note_count} note(s)`}>&#x1F5D2;</span>}

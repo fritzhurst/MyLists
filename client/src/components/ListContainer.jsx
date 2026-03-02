@@ -109,6 +109,17 @@ function ListContainer({ items, categoryType, onAddItem, onDeleteItem, onReorder
         </div>
       )}
 
+      {displayItems.length > 0 && (
+        <div className="list-header">
+          <span className="list-header-priority">#</span>
+          {!isDragDisabled && <span className="list-header-drag"></span>}
+          <span className="list-header-text">Item</span>
+          {showReleaseDate && <span className="list-header-release">Released</span>}
+          <span className="list-header-added">Added</span>
+          <span className="list-header-actions"></span>
+        </div>
+      )}
+
       <DndContext
         sensors={isDragDisabled ? [] : sensors}
         collisionDetection={closestCenter}
