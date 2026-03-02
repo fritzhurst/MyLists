@@ -1,22 +1,27 @@
 import nodemailer from 'nodemailer';
 
+const SMTP_HOST = process.env.SMTP_HOST || '';
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
+const SMTP_SECURE = (process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
 const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const SMTP_FROM = process.env.SMTP_FROM || SMTP_USER;
 
 let transporter = null;
 
-if (SMTP_USER && SMTP_PASS) {
+if (SMTP_HOST && SMTP_USER && SMTP_PASS) {
   transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_SECURE,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
   });
-  console.log(`Email configured with sender: ${SMTP_FROM}`);
+  console.log(`Email configured via ${SMTP_HOST}:${SMTP_PORT} (secure=${SMTP_SECURE}), sender: ${SMTP_FROM}`);
 } else {
-  console.log('Email not configured (SMTP_USER/SMTP_PASS not set)');
+  console.log('Email not configured (SMTP_HOST/SMTP_USER/SMTP_PASS not set)');
 }
 
 export function isEmailConfigured() {
