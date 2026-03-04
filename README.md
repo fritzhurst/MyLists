@@ -1,4 +1,4 @@
-# MyLists
+# MyLists `v1.5.0`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -6,13 +6,17 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
 
 - **User Authentication** — JWT-based login with admin and regular user roles
 - **Multi-User** — Each user has their own private lists and categories
-- **Category Tabs** — Create multiple lists organized as tabs across the top
-- **Drag-and-Drop** — Reorder items by dragging them up or down
+- **Category Tabs** — Create multiple lists organized in a sidebar; double-click to rename
+- **Drag-and-Drop** — Reorder items and categories by dragging; mobile-friendly with hold-to-drag gesture
+- **Inline Editing** — Double-click list names or item text to edit in place
 - **Specialized List Types:**
   - **Books** — Type-ahead search via Open Library. Displays cover art, author, year, and description on hover.
   - **Movies** — Type-ahead search via TMDB. Displays poster, director, runtime, rating, and overview on hover.
   - **TV Shows** — Type-ahead search via TMDB. Displays poster, creator, network, seasons, episodes, status, and rating on hover.
 - **Generic Lists** — Plain text lists for anything else (groceries, to-dos, etc.)
+- **Item Notes & Attachments** — Click an item to add text notes and file attachments
+- **Sorting** — Manual drag, date added, or release date; renumber to lock sort order
+- **Mobile Responsive** — Sidebar overlay, tap drag handle for metadata popover, dates shown below items
 - **Settings** — Users can change their password and set a personal TMDB API key
 - **Admin Panel** — Admin users can create/delete users
 - **Email Notifications** — Optional Gmail SMTP for sending welcome emails to new users
@@ -213,11 +217,14 @@ docker compose down -v
 | POST   | `/api/auth/test-email` | Admin: send test email |
 | GET    | `/api/categories` | List user's categories |
 | POST   | `/api/categories` | Create category `{ name, type }` |
+| PUT    | `/api/categories/:id` | Rename category `{ name }` |
 | DELETE | `/api/categories/:id` | Delete category + items |
+| PUT    | `/api/categories/reorder` | Reorder categories `{ orderedIds: [...] }` |
 | GET    | `/api/categories/:id/items` | List items for a category |
 | POST   | `/api/categories/:id/items` | Add item `{ text, metadata }` |
+| PUT    | `/api/items/:id` | Update item text `{ text }` |
 | DELETE | `/api/items/:id` | Delete an item |
-| PUT    | `/api/categories/:id/items/reorder` | Reorder `{ orderedIds: [...] }` |
+| PUT    | `/api/categories/:id/items/reorder` | Reorder items `{ orderedIds: [...] }` |
 | GET    | `/api/search/books?q=` | Search Open Library |
 | GET    | `/api/search/movies?q=` | Search TMDB movies |
 | GET    | `/api/search/tv?q=` | Search TMDB TV shows |
@@ -235,8 +242,9 @@ MyLists/
 │   │   └── auth.js         # JWT auth middleware
 │   ├── routes/
 │   │   ├── auth.js         # Auth + user management endpoints
-│   │   ├── categories.js   # Category CRUD (user-scoped)
-│   │   ├── items.js        # Item CRUD + reorder (user-scoped)
+│   │   ├── categories.js   # Category CRUD + rename (user-scoped)
+│   │   ├── items.js        # Item CRUD + edit + reorder (user-scoped)
+│   │   ├── notes.js        # Notes & attachments CRUD + file upload
 │   │   └── search.js       # Search proxy (Open Library + TMDB)
 │   └── services/
 │       └── email.js        # Nodemailer Gmail SMTP service
@@ -250,14 +258,55 @@ MyLists/
             ├── ChangePasswordPage.jsx # Forced password change
             ├── AdminPanel.jsx        # User management (admin)
             ├── SettingsPage.jsx      # Password + TMDB key settings
-            ├── TabBar.jsx            # Category tabs + type picker
-            ├── Tab.jsx               # Single tab
-            ├── ListContainer.jsx     # Drag-and-drop list
-            ├── DraggableItem.jsx     # Sortable item + thumbnail
+            ├── Sidebar.jsx           # Category list + drag reorder
+            ├── SidebarItem.jsx       # Single category + inline rename
+            ├── ListContainer.jsx     # Drag-and-drop list + sorting
+            ├── DraggableItem.jsx     # Sortable item + inline edit
             ├── AddItemForm.jsx       # Generic item input
             ├── SearchAddForm.jsx     # Type-ahead autocomplete
-            └── ItemPopover.jsx       # Hover metadata card
+            ├── ItemPopover.jsx       # Hover/tap metadata card
+            └── ItemDetailPanel.jsx   # Notes + attachments panel
 ```
+
+## Changelog
+
+### v1.5.0
+- Rename lists by double-clicking the name in the sidebar
+- Edit item text by double-clicking the item name
+- Mobile drag-and-drop with hold-to-drag gesture (TouchSensor with 300ms delay)
+- Tap drag handle on mobile to toggle metadata popover
+- Show release date and date added below item name on mobile
+- Display version number at bottom of sidebar
+
+### v1.4.0
+- Sidebar layout replacing top tab bar
+- Item notes and file attachments (click item to open detail panel)
+- Release date sorting with locked priorities and renumber button
+- Item indicators showing note/attachment counts
+- Column headers for list items
+- Favicon
+
+### v1.3.0
+- Specialized list types: Books, Movies, TV Shows with type-ahead search
+- Cover art thumbnails and hover popover cards with metadata
+- Open Library API (books) and TMDB API (movies/TV)
+- Per-user TMDB API key setting
+
+### v1.2.0
+- JWT authentication with admin and regular user roles
+- Admin panel for user management
+- Gmail SMTP email support for welcome emails
+- GitHub Actions CI/CD for automatic Docker image publishing
+
+### v1.1.0
+- Multi-user support with private lists per user
+- Drag-and-drop reordering for items and categories
+- Generic list type for plain text items
+
+### v1.0.0
+- Initial release: Dockerized list management app
+- Category-based organization
+- SQLite persistent storage on Docker volume
 
 ## License
 
