@@ -1,4 +1,4 @@
-# MyLists `v1.5.1`
+# MyLists `v1.5.2`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -269,6 +269,11 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.5.2
+- Fix mobile drag-and-drop: replace PointerSensor with MouseSensor so TouchSensor properly handles touch input
+- Hold drag handle (☰) on mobile now correctly activates drag instead of showing popover
+- Suppress popover toggle after a drag operation completes
 
 ### v1.5.1
 - Pencil icon (✎) next to item name for inline editing

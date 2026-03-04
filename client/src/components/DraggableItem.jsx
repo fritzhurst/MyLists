@@ -28,6 +28,7 @@ function DraggableItem({ item, priority, categoryType, onDelete, onUpdateItem, d
   const [picking, setPicking] = useState(false);
   const editRef = useRef(null);
   const debounceRef = useRef(null);
+  const dragOccurredRef = useRef(false);
 
   const {
     attributes,
@@ -62,9 +63,12 @@ function DraggableItem({ item, priority, categoryType, onDelete, onUpdateItem, d
   const hasNotes = (item.note_count || 0) > 0;
   const hasAttachments = (item.attachment_count || 0) > 0;
 
-  // Close popover when dragging starts
+  // Track drag occurrence and close popover when dragging starts
   useEffect(() => {
-    if (isDragging) setPopoverOpen(false);
+    if (isDragging) {
+      dragOccurredRef.current = true;
+      setPopoverOpen(false);
+    }
   }, [isDragging]);
 
   // Focus edit input when entering edit mode
@@ -101,8 +105,12 @@ function DraggableItem({ item, priority, categoryType, onDelete, onUpdateItem, d
     };
   }, [editText, editing, isSpecialized, categoryType]);
 
-  // Handle tap on drag handle — toggle popover for mobile
+  // Handle tap on drag handle — toggle popover for mobile (suppress after drag)
   const handleHandleClick = useCallback((e) => {
+    if (dragOccurredRef.current) {
+      dragOccurredRef.current = false;
+      return;
+    }
     if (hasMetadata) {
       setPopoverOpen(prev => !prev);
     }
