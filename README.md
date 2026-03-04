@@ -15,7 +15,7 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
 - **Generic Lists** — Plain text lists for anything else (groceries, to-dos, etc.)
 - **Settings** — Users can change their password and set a personal TMDB API key
 - **Admin Panel** — Admin users can create/delete users
-- **Email Notifications** — Optional SMTP for sending welcome emails to new users (supports Exchange 365, Gmail, and other providers)
+- **Email Notifications** — Optional Gmail SMTP for sending welcome emails to new users
 - **Persistent Storage** — SQLite database on a Docker volume survives container restarts and rebuilds
 
 ## Tech Stack
@@ -25,7 +25,7 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
 | Backend   | Node.js, Express, better-sqlite3, JWT       |
 | Frontend  | React 18, Vite, @dnd-kit/sortable           |
 | Auth      | bcryptjs, jsonwebtoken                       |
-| Email     | Nodemailer (any SMTP provider)               |
+| Email     | Nodemailer (Gmail SMTP)                      |
 | Container | Docker (multi-stage build)                   |
 | APIs      | Open Library (books), TMDB (movies/TV)       |
 
@@ -59,7 +59,7 @@ docker run -d \
   ghcr.io/fritzhurst/mylists:latest
 ```
 
-To include email support, add the SMTP flags (Exchange 365 example shown):
+To include email support, add the SMTP flags:
 ```bash
 docker run -d \
   --name mylists \
@@ -69,12 +69,9 @@ docker run -d \
   -e DB_PATH=/app/data/mylists.db \
   -e TMDB_API_KEY=your_tmdb_api_key_here \
   -e JWT_SECRET=your-secret-here \
-  -e SMTP_HOST=smtp.office365.com \
-  -e SMTP_PORT=587 \
-  -e SMTP_SECURE=false \
-  -e SMTP_USER=you@yourdomain.com \
-  -e SMTP_PASS=your-password \
-  -e SMTP_FROM=you@yourdomain.com \
+  -e SMTP_USER=your-gmail@gmail.com \
+  -e SMTP_PASS=your-gmail-app-password \
+  -e SMTP_FROM=your-gmail@gmail.com \
   -e APP_URL=http://localhost:6001 \
   ghcr.io/fritzhurst/mylists:latest
 ```
@@ -93,13 +90,10 @@ Then open **http://localhost:6001** and log in with `admin` / `admin`.
    ```
    TMDB_API_KEY=your_tmdb_api_key_here
 
-   # Optional: SMTP for sending welcome emails (any provider)
-   SMTP_HOST=smtp.office365.com
-   SMTP_PORT=587
-   SMTP_SECURE=false
-   SMTP_USER=you@yourdomain.com
-   SMTP_PASS=your-password
-   SMTP_FROM=you@yourdomain.com
+   # Optional: Gmail SMTP for sending welcome emails
+   SMTP_USER=your-gmail@gmail.com
+   SMTP_PASS=your-gmail-app-password
+   SMTP_FROM=your-gmail@gmail.com
    APP_URL=http://localhost:6001
 
    # Optional: JWT secret (defaults to a built-in value)
@@ -131,7 +125,7 @@ Then open **http://localhost:6001** and log in with `admin` / `admin`.
      mylists
    ```
 
-   To include email support, add the SMTP flags (Exchange 365 example shown):
+   To include email support, add the SMTP flags:
    ```bash
    docker run -d \
      --name mylists \
@@ -141,12 +135,9 @@ Then open **http://localhost:6001** and log in with `admin` / `admin`.
      -e DB_PATH=/app/data/mylists.db \
      -e TMDB_API_KEY=your_tmdb_api_key_here \
      -e JWT_SECRET=your-secret-here \
-     -e SMTP_HOST=smtp.office365.com \
-     -e SMTP_PORT=587 \
-     -e SMTP_SECURE=false \
-     -e SMTP_USER=you@yourdomain.com \
-     -e SMTP_PASS=your-password \
-     -e SMTP_FROM=you@yourdomain.com \
+     -e SMTP_USER=your-gmail@gmail.com \
+     -e SMTP_PASS=your-gmail-app-password \
+     -e SMTP_FROM=your-gmail@gmail.com \
      -e APP_URL=http://localhost:6001 \
      mylists
    ```
@@ -167,17 +158,12 @@ Then open **http://localhost:6001** and log in with `admin` / `admin`.
 
 ### Email Setup (Optional)
 
-To enable welcome emails for new users, set the SMTP environment variables in your `.env` file or `docker run` command. Common provider settings:
+To enable welcome emails for new users:
 
-| Provider | SMTP_HOST | SMTP_PORT | SMTP_SECURE |
-|----------|-----------|-----------|-------------|
-| Exchange 365 | `smtp.office365.com` | `587` | `false` |
-| Gmail | `smtp.gmail.com` | `587` | `false` |
-| Custom SMTP | your server hostname | your port | `true` for port 465, `false` for 587 |
-
-**Exchange 365:** Use your Microsoft 365 email and password (or app password if MFA is enabled).
-
-**Gmail:** Go to Google Account > Security > 2-Step Verification > App passwords, then generate a password and use it as `SMTP_PASS`.
+1. Go to your Google Account > Security > 2-Step Verification
+2. Under "App passwords", generate a new app password for "Mail"
+3. Add the app password to your `.env` file as `SMTP_PASS`
+4. Set `SMTP_USER` and `SMTP_FROM` to your Gmail address
 
 ### Stopping
 
@@ -253,7 +239,7 @@ MyLists/
 │   │   ├── items.js        # Item CRUD + reorder (user-scoped)
 │   │   └── search.js       # Search proxy (Open Library + TMDB)
 │   └── services/
-│       └── email.js        # Nodemailer SMTP email service
+│       └── email.js        # Nodemailer Gmail SMTP service
 └── client/
     ├── vite.config.js
     └── src/
