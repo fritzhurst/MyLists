@@ -102,9 +102,9 @@ function App() {
     setItems((prev) => [...prev, item]);
   }, [activeCategoryId]);
 
-  const handleUpdateItem = useCallback(async (id, text) => {
-    const updated = await api.updateItem(id, text);
-    setItems((prev) => prev.map((i) => i.id === id ? { ...i, text: updated.text } : i));
+  const handleUpdateItem = useCallback(async (id, text, metadata) => {
+    const updated = await api.updateItem(id, text, metadata);
+    setItems((prev) => prev.map((i) => i.id === id ? { ...i, ...updated } : i));
   }, []);
 
   const handleDeleteItem = useCallback(async (id) => {

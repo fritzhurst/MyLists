@@ -63,10 +63,10 @@ router.post('/:categoryId/items', (req, res) => {
   res.status(201).json(item);
 });
 
-// PUT /api/items/:id — update item text
+// PUT /api/items/:id — update item text and optionally metadata
 router.put('/:id', (req, res) => {
   const { id } = req.params;
-  const { text } = req.body;
+  const { text, metadata } = req.body;
 
   if (!text || !text.trim()) {
     return res.status(400).json({ error: 'Text is required' });
@@ -80,7 +80,12 @@ router.put('/:id', (req, res) => {
     return res.status(404).json({ error: 'Item not found' });
   }
 
-  db.prepare('UPDATE items SET text = ? WHERE id = ?').run(text.trim(), id);
+  if (metadata !== undefined) {
+    const metadataJson = metadata ? JSON.stringify(metadata) : null;
+    db.prepare('UPDATE items SET text = ?, metadata = ? WHERE id = ?').run(text.trim(), metadataJson, id);
+  } else {
+    db.prepare('UPDATE items SET text = ? WHERE id = ?').run(text.trim(), id);
+  }
 
   const updated = db.prepare('SELECT * FROM items WHERE id = ?').get(id);
   if (updated.metadata) updated.metadata = JSON.parse(updated.metadata);

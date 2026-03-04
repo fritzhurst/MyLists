@@ -443,6 +443,48 @@ h1 {
   box-sizing: border-box;
 }
 
+.item-edit-btn {
+  border: none;
+  background: none;
+  color: #ccc;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: color 0.15s;
+  flex-shrink: 0;
+}
+
+.item-edit-btn:hover {
+  color: #1a1a2e;
+}
+
+.item-edit-form {
+  position: relative;
+  width: 100%;
+}
+
+.edit-search-spinner {
+  font-size: 0.8rem;
+  color: #888;
+  padding: 4px 0;
+}
+
+.edit-search-results {
+  list-style: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  margin-top: 2px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+}
+
 .item-dates-mobile {
   display: none;
 }

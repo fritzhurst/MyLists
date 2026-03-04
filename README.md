@@ -1,4 +1,4 @@
-# MyLists `v1.5.0`
+# MyLists `v1.5.1`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -269,6 +269,12 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.5.1
+- Pencil icon (✎) next to item name for inline editing
+- Type-ahead search when editing items (same as adding new items)
+- Free-text editing supported even without selecting a type-ahead result
+- Editing updates both item text and metadata when picking from search results
 
 ### v1.5.0
 - Rename lists by double-clicking the name in the sidebar

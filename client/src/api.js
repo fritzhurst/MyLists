@@ -113,10 +113,12 @@ export async function createItem(categoryId, text, metadata = null) {
   return res.json();
 }
 
-export async function updateItem(id, text) {
+export async function updateItem(id, text, metadata) {
+  const body = { text };
+  if (metadata !== undefined) body.metadata = metadata;
   const res = await authFetch(`${BASE}/items/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({ text }),
+    body: JSON.stringify(body),
   });
   return res.json();
 }
