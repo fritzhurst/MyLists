@@ -63,6 +63,30 @@ router.post('/:categoryId/items', (req, res) => {
   res.status(201).json(item);
 });
 
+// PUT /api/items/:id — update item text
+router.put('/:id', (req, res) => {
+  const { id } = req.params;
+  const { text } = req.body;
+
+  if (!text || !text.trim()) {
+    return res.status(400).json({ error: 'Text is required' });
+  }
+
+  const item = db.prepare(
+    'SELECT i.id FROM items i JOIN categories c ON i.category_id = c.id WHERE i.id = ? AND c.user_id = ?'
+  ).get(id, req.user.id);
+
+  if (!item) {
+    return res.status(404).json({ error: 'Item not found' });
+  }
+
+  db.prepare('UPDATE items SET text = ? WHERE id = ?').run(text.trim(), id);
+
+  const updated = db.prepare('SELECT * FROM items WHERE id = ?').get(id);
+  if (updated.metadata) updated.metadata = JSON.parse(updated.metadata);
+  res.json(updated);
+});
+
 // DELETE /api/items/:id — delete a single item (verify ownership via category)
 router.delete('/:id', (req, res) => {
   const { id } = req.params;

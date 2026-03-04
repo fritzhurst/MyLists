@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import ItemPopover from './ItemPopover.jsx';
 import ItemDetailPanel from './ItemDetailPanel.jsx';
 
-function DraggableItem({ item, priority, categoryType, onDelete, dragDisabled, showReleaseDate }) {
+function DraggableItem({ item, priority, categoryType, onDelete, onUpdateItem, dragDisabled, showReleaseDate }) {
   const [hovered, setHovered] = useState(false);
+  const [popoverOpen, setPopoverOpen] = useState(false);
   const [showDetail, setShowDetail] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editText, setEditText] = useState(item.text);
+  const editRef = useRef(null);
+  const clickTimer = useRef(null);
 
   const {
     attributes,
@@ -26,7 +31,6 @@ function DraggableItem({ item, priority, categoryType, onDelete, dragDisabled, s
   const hasMetadata = item.metadata && categoryType !== 'generic';
   const thumbUrl = item.metadata?.thumbnailUrl || item.metadata?.posterUrl;
 
-  // Priority: use locked manual priority if provided, otherwise use sort_order + 1
   const displayPriority = priority != null ? priority : (item.sort_order + 1);
 
   const formattedDate = item.created_at
@@ -41,6 +45,62 @@ function DraggableItem({ item, priority, categoryType, onDelete, dragDisabled, s
   const hasNotes = (item.note_count || 0) > 0;
   const hasAttachments = (item.attachment_count || 0) > 0;
 
+  // Close popover when dragging starts
+  useEffect(() => {
+    if (isDragging) setPopoverOpen(false);
+  }, [isDragging]);
+
+  // Focus edit input when entering edit mode
+  useEffect(() => {
+    if (editing && editRef.current) {
+      editRef.current.focus();
+      editRef.current.select();
+    }
+  }, [editing]);
+
+  // Handle tap on drag handle — toggle popover for mobile
+  const handleHandleClick = useCallback((e) => {
+    if (hasMetadata) {
+      setPopoverOpen(prev => !prev);
+    }
+  }, [hasMetadata]);
+
+  // Single click opens detail panel, double click enters edit mode
+  const handleTextClick = useCallback(() => {
+    if (clickTimer.current) {
+      clearTimeout(clickTimer.current);
+      clickTimer.current = null;
+      // Double click — enter edit mode
+      setEditText(item.text);
+      setEditing(true);
+    } else {
+      clickTimer.current = setTimeout(() => {
+        clickTimer.current = null;
+        // Single click — open detail panel
+        setShowDetail(true);
+      }, 250);
+    }
+  }, [item.text]);
+
+  const handleEditSave = useCallback(() => {
+    const trimmed = editText.trim();
+    if (trimmed && trimmed !== item.text && onUpdateItem) {
+      onUpdateItem(item.id, trimmed);
+    }
+    setEditing(false);
+  }, [editText, item.id, item.text, onUpdateItem]);
+
+  const handleEditKeyDown = useCallback((e) => {
+    if (e.key === 'Enter') {
+      handleEditSave();
+    } else if (e.key === 'Escape') {
+      setEditing(false);
+      setEditText(item.text);
+    }
+  }, [handleEditSave, item.text]);
+
+  const showPopover = (hovered || popoverOpen) && hasMetadata && !isDragging;
+
   return (
     <>
       <div
@@ -48,23 +108,49 @@ function DraggableItem({ item, priority, categoryType, onDelete, dragDisabled, s
         style={style}
         className={`list-item ${hasMetadata ? 'list-item-media' : ''}`}
         onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onMouseLeave={() => { setHovered(false); setPopoverOpen(false); }}
       >
         <span className="item-priority">{displayPriority}</span>
         {!dragDisabled && (
-          <span className="drag-handle" {...attributes} {...listeners}>
+          <span
+            className="drag-handle"
+            onClick={handleHandleClick}
+            {...attributes}
+            {...listeners}
+          >
             &#x2630;
           </span>
         )}
         {hasMetadata && thumbUrl && (
           <img src={thumbUrl} alt="" className="item-thumbnail" />
         )}
-        <span
-          className="item-text item-text-clickable"
-          onClick={() => setShowDetail(true)}
-        >
-          {item.text}
-        </span>
+        <div className="item-text-wrapper">
+          {editing ? (
+            <input
+              ref={editRef}
+              className="item-text-edit"
+              value={editText}
+              onChange={(e) => setEditText(e.target.value)}
+              onBlur={handleEditSave}
+              onKeyDown={handleEditKeyDown}
+            />
+          ) : (
+            <span
+              className="item-text item-text-clickable"
+              onClick={handleTextClick}
+            >
+              {item.text}
+            </span>
+          )}
+          <div className="item-dates-mobile">
+            {showReleaseDate && formattedRelease && (
+              <span className="item-date-mobile">Released: {formattedRelease}</span>
+            )}
+            {formattedDate && (
+              <span className="item-date-mobile">Added: {formattedDate}</span>
+            )}
+          </div>
+        </div>
         {showReleaseDate && (
           <span className="item-release-date" title="Release date">{formattedRelease || '—'}</span>
         )}
@@ -82,7 +168,7 @@ function DraggableItem({ item, priority, categoryType, onDelete, dragDisabled, s
         >
           &times;
         </button>
-        {hovered && hasMetadata && !isDragging && (
+        {showPopover && (
           <ItemPopover item={item} categoryType={categoryType} />
         )}
       </div>

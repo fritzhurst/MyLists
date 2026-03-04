@@ -85,6 +85,11 @@ function App() {
     });
   }, [activeCategoryId]);
 
+  const handleRenameCategory = useCallback(async (id, name) => {
+    const updated = await api.renameCategory(id, name);
+    setCategories((prev) => prev.map((c) => c.id === id ? { ...c, name: updated.name } : c));
+  }, []);
+
   const handleReorderCategories = useCallback(async (reorderedCategories) => {
     setCategories(reorderedCategories);
     const orderedIds = reorderedCategories.map(c => c.id);
@@ -96,6 +101,11 @@ function App() {
     const item = await api.createItem(activeCategoryId, text, metadata || null);
     setItems((prev) => [...prev, item]);
   }, [activeCategoryId]);
+
+  const handleUpdateItem = useCallback(async (id, text) => {
+    const updated = await api.updateItem(id, text);
+    setItems((prev) => prev.map((i) => i.id === id ? { ...i, text: updated.text } : i));
+  }, []);
 
   const handleDeleteItem = useCallback(async (id) => {
     await api.deleteItem(id);
@@ -157,6 +167,7 @@ function App() {
           onSelect={setActiveCategoryId}
           onAdd={handleAddCategory}
           onDelete={handleDeleteCategory}
+          onRename={handleRenameCategory}
           onReorder={handleReorderCategories}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -170,6 +181,7 @@ function App() {
                 categoryType={activeCategoryType}
                 onAddItem={handleAddItem}
                 onDeleteItem={handleDeleteItem}
+                onUpdateItem={handleUpdateItem}
                 onReorder={handleReorder}
               />
             </>

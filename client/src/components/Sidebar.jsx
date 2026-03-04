@@ -4,6 +4,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -15,13 +16,14 @@ import {
 } from '@dnd-kit/sortable';
 import SidebarItem from './SidebarItem.jsx';
 
-function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onReorder, isOpen, onClose }) {
+function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRename, onReorder, isOpen, onClose }) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState('generic');
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 300, tolerance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -90,6 +92,7 @@ function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRe
                   isActive={cat.id === activeCategoryId}
                   onSelect={() => { onSelect(cat.id); onClose(); }}
                   onDelete={() => onDelete(cat.id)}
+                  onRename={onRename}
                 />
               ))}
             </nav>

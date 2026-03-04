@@ -4,6 +4,7 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
@@ -21,11 +22,12 @@ function getReleaseDate(item) {
   return item.metadata?.releaseDate || item.metadata?.year?.toString() || '';
 }
 
-function ListContainer({ items, categoryType, onAddItem, onDeleteItem, onReorder }) {
+function ListContainer({ items, categoryType, onAddItem, onDeleteItem, onUpdateItem, onReorder }) {
   const [sortBy, setSortBy] = useState('manual');
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 300, tolerance: 5 } }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -133,6 +135,7 @@ function ListContainer({ items, categoryType, onAddItem, onDeleteItem, onReorder
               priority={isDragDisabled ? manualOrderMap[item.id] : null}
               categoryType={categoryType}
               onDelete={onDeleteItem}
+              onUpdateItem={onUpdateItem}
               dragDisabled={isDragDisabled}
               showReleaseDate={showReleaseDate}
             />

@@ -80,6 +80,14 @@ export async function createCategory(name, type = 'generic') {
   return res.json();
 }
 
+export async function renameCategory(id, name) {
+  const res = await authFetch(`${BASE}/categories/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ name }),
+  });
+  return res.json();
+}
+
 export async function deleteCategory(id) {
   await authFetch(`${BASE}/categories/${id}`, { method: 'DELETE' });
 }
@@ -101,6 +109,14 @@ export async function createItem(categoryId, text, metadata = null) {
   const res = await authFetch(`${BASE}/categories/${categoryId}/items`, {
     method: 'POST',
     body: JSON.stringify({ text, metadata }),
+  });
+  return res.json();
+}
+
+export async function updateItem(id, text) {
+  const res = await authFetch(`${BASE}/items/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ text }),
   });
   return res.json();
 }
