@@ -1,4 +1,4 @@
-# MyLists `v1.5.2`
+# MyLists `v1.5.3`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -269,6 +269,11 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.5.3
+- SVG favicon with full-bleed background — eliminates white space on Android adaptive icons
+- Remember active list across page refreshes (stored in localStorage)
+- Clear saved list on logout
 
 ### v1.5.2
 - Fix mobile drag-and-drop: replace PointerSensor with MouseSensor so TouchSensor properly handles touch input

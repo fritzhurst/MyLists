@@ -32,6 +32,7 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('activeCategoryId');
     setUser(null);
     setCategories([]);
     setItems([]);
@@ -44,21 +45,24 @@ function App() {
     setTempPassword('');
   };
 
-  // Load categories when user is logged in
+  // Load categories when user is logged in, restore last active list
   useEffect(() => {
     if (user && !mustChangePassword) {
       api.getCategories().then((cats) => {
         setCategories(cats);
         if (cats.length > 0) {
-          setActiveCategoryId(cats[0].id);
+          const savedId = parseInt(localStorage.getItem('activeCategoryId'), 10);
+          const exists = cats.some(c => c.id === savedId);
+          setActiveCategoryId(exists ? savedId : cats[0].id);
         }
       });
     }
   }, [user, mustChangePassword]);
 
-  // Load items when active category changes
+  // Load items when active category changes, persist selection
   useEffect(() => {
     if (activeCategoryId != null) {
+      localStorage.setItem('activeCategoryId', activeCategoryId);
       api.getItems(activeCategoryId).then(setItems);
     } else {
       setItems([]);
