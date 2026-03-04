@@ -270,6 +270,15 @@ h1 {
   color: #333;
 }
 
+.sidebar-version {
+  padding: 10px 12px;
+  font-size: 0.7rem;
+  color: #aaa;
+  text-align: center;
+  border-top: 1px solid #eee;
+  flex-shrink: 0;
+}
+
 /* Main Content */
 .main-content {
   flex: 1;

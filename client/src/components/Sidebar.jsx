@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { version } from '../../package.json';
 import {
   DndContext,
   closestCenter,
@@ -98,6 +99,8 @@ function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRe
             </nav>
           </SortableContext>
         </DndContext>
+
+        <div className="sidebar-version">v{version}</div>
       </aside>
     </>
   );
