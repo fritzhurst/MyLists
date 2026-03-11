@@ -51,6 +51,9 @@ if (!userColumns.find(c => c.name === 'tmdb_api_key')) {
 if (!userColumns.find(c => c.name === 'must_change_password')) {
   db.exec("ALTER TABLE users ADD COLUMN must_change_password INTEGER NOT NULL DEFAULT 0");
 }
+if (!userColumns.find(c => c.name === 'plex_token')) {
+  db.exec("ALTER TABLE users ADD COLUMN plex_token TEXT DEFAULT NULL");
+}
 
 const itemColumns = db.prepare("PRAGMA table_info(items)").all();
 if (!itemColumns.find(c => c.name === 'metadata')) {

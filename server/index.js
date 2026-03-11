@@ -8,6 +8,7 @@ import categoryRoutes from './routes/categories.js';
 import itemRoutes from './routes/items.js';
 import searchRoutes from './routes/search.js';
 import notesRoutes from './routes/notes.js';
+import plexRoutes from './routes/plex.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -30,6 +31,7 @@ app.use('/api/categories', requireAuth, itemRoutes);
 app.use('/api/items', requireAuth, itemRoutes);
 app.use('/api/items', requireAuth, notesRoutes);
 app.use('/api/search', requireAuth, searchRoutes);
+app.use('/api/plex', requireAuth, plexRoutes);
 
 // Serve uploaded files (auth required)
 const dataDir = process.env.DB_PATH

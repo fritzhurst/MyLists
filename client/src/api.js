@@ -252,3 +252,74 @@ export async function sendTestEmail(to) {
   }
   return res.json();
 }
+
+// Plex APIs
+export async function getPlexStatus() {
+  const res = await authFetch(`${BASE}/plex/status`);
+  return res.json();
+}
+
+export async function initPlexPin() {
+  const res = await authFetch(`${BASE}/plex/pin`, { method: 'POST' });
+  if (!res.ok) {
+    const d = await res.json();
+    throw new Error(d.error || 'Failed to start Plex auth');
+  }
+  return res.json();
+}
+
+export async function checkPlexPin(pinId) {
+  const res = await authFetch(`${BASE}/plex/pin/${pinId}`);
+  if (!res.ok) {
+    const d = await res.json();
+    throw new Error(d.error || 'Failed to check PIN');
+  }
+  return res.json();
+}
+
+export async function disconnectPlex() {
+  const res = await authFetch(`${BASE}/plex/token`, { method: 'DELETE' });
+  return res.json();
+}
+
+export async function getPlexServers() {
+  const res = await authFetch(`${BASE}/plex/servers`);
+  if (!res.ok) {
+    const d = await res.json();
+    throw new Error(d.error || 'Failed to get Plex servers');
+  }
+  return res.json();
+}
+
+export async function getPlexUsers() {
+  const res = await authFetch(`${BASE}/plex/users`);
+  if (!res.ok) {
+    const d = await res.json();
+    throw new Error(d.error || 'Failed to get Plex users');
+  }
+  return res.json();
+}
+
+export async function switchPlexUser(userUuid, pin) {
+  const res = await authFetch(`${BASE}/plex/switch-user`, {
+    method: 'POST',
+    body: JSON.stringify({ userUuid, pin }),
+  });
+  if (!res.ok) {
+    const d = await res.json();
+    throw new Error(d.error || 'Failed to switch user');
+  }
+  return res.json();
+}
+
+export async function createPlexPlaylist({ categoryId, serverId, serverConnections, serverToken, userToken, confirmed }) {
+  const res = await authFetch(`${BASE}/plex/playlist`, {
+    method: 'POST',
+    body: JSON.stringify({ categoryId, serverId, serverConnections, serverToken, userToken: userToken || null, confirmed: !!confirmed }),
+  });
+  const data = await res.json();
+  if (!res.ok && !data.exists) {
+    throw new Error(data.error || 'Failed to create playlist');
+  }
+  return data;
+}

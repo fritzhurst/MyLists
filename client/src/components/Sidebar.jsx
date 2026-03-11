@@ -17,7 +17,7 @@ import {
 } from '@dnd-kit/sortable';
 import SidebarItem from './SidebarItem.jsx';
 
-function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRename, onReorder, isOpen, onClose }) {
+function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRename, onReorder, isOpen, onClose, onPlexPlaylist }) {
   const [adding, setAdding] = useState(false);
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState('generic');
@@ -99,6 +99,12 @@ function Sidebar({ categories, activeCategoryId, onSelect, onAdd, onDelete, onRe
             </nav>
           </SortableContext>
         </DndContext>
+
+        <div className="sidebar-plex">
+          <button className="sidebar-plex-btn" onClick={onPlexPlaylist}>
+            &#9654; Create Plex Playlist
+          </button>
+        </div>
 
         <div className="sidebar-version">v{version}</div>
       </aside>

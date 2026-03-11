@@ -5,6 +5,7 @@ import AdminPanel from './components/AdminPanel.jsx';
 import SettingsPage from './components/SettingsPage.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import ListContainer from './components/ListContainer.jsx';
+import PlexPlaylistModal from './components/PlexPlaylistModal.jsx';
 import * as api from './api.js';
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showPlexModal, setShowPlexModal] = useState(false);
 
   const [categories, setCategories] = useState([]);
   const [activeCategoryId, setActiveCategoryId] = useState(null);
@@ -175,7 +177,11 @@ function App() {
           onReorder={handleReorderCategories}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          onPlexPlaylist={() => { setSidebarOpen(false); setShowPlexModal(true); }}
         />
+        {showPlexModal && (
+          <PlexPlaylistModal categories={categories} onClose={() => setShowPlexModal(false)} />
+        )}
         <main className="main-content">
           {activeCategoryId != null && (
             <>
