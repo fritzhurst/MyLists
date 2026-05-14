@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import path from 'path';
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
 const dbPath = process.env.DB_PATH || path.join(process.cwd(), 'data', 'mylists.db');
@@ -91,12 +92,31 @@ db.exec(`
   );
 `);
 
-// Seed admin user if not exists
-const admin = db.prepare("SELECT id FROM users WHERE email = 'admin'").get();
+// Seed admin user if not exists; generate a random temp password and force change.
+const admin = db.prepare("SELECT id, password, must_change_password FROM users WHERE email = 'admin'").get();
+function printAdminBanner(lines) {
+  const bar = '='.repeat(65);
+  console.log(`\n${bar}`);
+  for (const line of lines) console.log(`  ${line}`);
+  console.log(`${bar}\n`);
+}
 if (!admin) {
-  const hash = bcrypt.hashSync('admin', 10);
-  db.prepare("INSERT INTO users (email, password, role) VALUES ('admin', ?, 'admin')").run(hash);
-  console.log('Default admin user created (login: admin / admin)');
+  const tempPassword = crypto.randomBytes(12).toString('base64url');
+  const hash = bcrypt.hashSync(tempPassword, 10);
+  db.prepare("INSERT INTO users (email, password, role, must_change_password) VALUES ('admin', ?, 'admin', 1)").run(hash);
+  printAdminBanner([
+    'FIRST-RUN ADMIN CREDENTIALS',
+    'Login:              admin',
+    `Temporary password: ${tempPassword}`,
+    'You will be required to change this on first login.',
+  ]);
+} else if (bcrypt.compareSync('admin', admin.password) && !admin.must_change_password) {
+  // Existing install with legacy default password — force change on next login.
+  db.prepare('UPDATE users SET must_change_password = 1 WHERE id = ?').run(admin.id);
+  printAdminBanner([
+    'SECURITY: existing admin user still has the default password "admin".',
+    'You will be required to change it on next login.',
+  ]);
 }
 
 export default db;

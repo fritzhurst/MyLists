@@ -14,6 +14,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust one upstream proxy hop so rate-limit / req.ip see the real client IP
+// (set TRUST_PROXY=false to disable if running without a proxy).
+if (process.env.TRUST_PROXY !== 'false') {
+  app.set('trust proxy', 1);
+}
+
 // Middleware
 app.use(express.json());
 
