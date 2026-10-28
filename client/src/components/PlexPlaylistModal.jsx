@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import * as api from '../api.js';
 
-// Steps: loading | connect | pin | servers | users | user-pin | list | creating | exists-confirm | done | error
+// Steps: loading | connect | pin | servers | users | user-pin | list | creating | done | error
 
 function PlexPlaylistModal({ categories, onClose }) {
   const [step, setStep] = useState('loading');
@@ -15,7 +15,6 @@ function PlexPlaylistModal({ categories, onClose }) {
   const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
-  const [existingName, setExistingName] = useState('');
   const pollRef = useRef(null);
 
   // Restore saved server/user token from localStorage
@@ -176,7 +175,9 @@ function PlexPlaylistModal({ categories, onClose }) {
     }
   };
 
-  const handleCreatePlaylist = async (confirmed = false) => {
+  // Always a rebuild: the server replaces any playlist with the same name, so
+  // there is no confirmation step here any more.
+  const handleCreatePlaylist = async () => {
     if (!selectedCategoryId || !selectedServer) return;
     setStep('creating');
     setError('');
@@ -187,13 +188,7 @@ function PlexPlaylistModal({ categories, onClose }) {
         serverConnections: selectedServer.connections,
         serverToken: selectedServer.accessToken,
         userToken,
-        confirmed,
       });
-      if (res.exists) {
-        setExistingName(res.playlistName);
-        setStep('exists-confirm');
-        return;
-      }
       setResult(res);
       setStep('done');
     } catch (err) {
@@ -351,7 +346,7 @@ function PlexPlaylistModal({ categories, onClose }) {
                     <button
                       className="plex-btn plex-btn-primary"
                       disabled={!selectedCategoryId}
-                      onClick={() => handleCreatePlaylist(false)}
+                      onClick={() => handleCreatePlaylist()}
                     >
                       Create Playlist
                     </button>
@@ -362,23 +357,6 @@ function PlexPlaylistModal({ categories, onClose }) {
               <button className="plex-link-btn plex-disconnect-btn" onClick={handleDisconnect}>
                 Disconnect Plex
               </button>
-            </div>
-          )}
-
-          {step === 'exists-confirm' && (
-            <div className="plex-step">
-              <p>
-                A playlist named <strong>&ldquo;{existingName}&rdquo;</strong> already exists in Plex.
-              </p>
-              <p>Click OK to delete the existing playlist and recreate it with your current list data.</p>
-              <div className="plex-btn-row plex-btn-row-top">
-                <button className="plex-btn plex-btn-secondary" onClick={() => setStep('list')}>
-                  Cancel
-                </button>
-                <button className="plex-btn plex-btn-primary" onClick={() => handleCreatePlaylist(true)}>
-                  OK, Replace It
-                </button>
-              </div>
             </div>
           )}
 
@@ -393,11 +371,19 @@ function PlexPlaylistModal({ categories, onClose }) {
             <div className="plex-step plex-done">
               <div className="plex-success-icon">&#10003;</div>
               <p>
-                <strong>&ldquo;{result.playlistName}&rdquo;</strong> {result.replaced ? 'updated' : 'created'} in Plex!
+                <strong>&ldquo;{result.playlistName}&rdquo;</strong> {result.replaced ? 'rebuilt' : 'created'} in Plex!
               </p>
               <p className="plex-hint">
-                {result.itemCount} of {result.totalItems} item{result.totalItems !== 1 ? 's' : ''} added.
+                {result.itemCount} of {result.totalItems} item{result.totalItems !== 1 ? 's' : ''} added
+                {result.sections && result.sections.length > 0
+                  ? ` from ${result.sections.length} Plex librar${result.sections.length === 1 ? 'y' : 'ies'}.`
+                  : '.'}
               </p>
+              {result.replaced && result.replacedCount > 1 && (
+                <p className="plex-hint">
+                  Replaced {result.replacedCount} older playlists with this name.
+                </p>
+              )}
               {result.notFound && result.notFound.length > 0 && (
                 <div className="plex-not-found">
                   <p>Not found in Plex library:</p>
