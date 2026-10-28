@@ -17,7 +17,7 @@ router.get('/books', async (req, res) => {
   try {
     const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=8&fields=key,title,author_name,first_publish_year,cover_i`;
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'MyLists/1.5.3 (https://github.com/fritzhurst/MyLists)' },
+      headers: { 'User-Agent': 'MyLists/1.7.0 (https://github.com/fritzhurst/MyLists)' },
     });
     const data = await response.json();
 
@@ -47,7 +47,7 @@ router.get('/books/:workId/details', async (req, res) => {
   try {
     const url = `https://openlibrary.org/works/${workId}.json`;
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'MyLists/1.5.3 (https://github.com/fritzhurst/MyLists)' },
+      headers: { 'User-Agent': 'MyLists/1.7.0 (https://github.com/fritzhurst/MyLists)' },
     });
     const data = await response.json();
 

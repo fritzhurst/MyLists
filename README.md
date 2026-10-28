@@ -1,4 +1,4 @@
-# MyLists `v1.6.3`
+# MyLists `v1.7.0`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -269,6 +269,14 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.7.0
+- **Create Plex Playlist works again.** The app called Plex's per-section `/library/sections/{key}/search` endpoint, which modern Plex Media Server rejects with `400 Bad Request` — so every lookup failed and every export ended in "None of the items in your list were found in the Plex library."
+- Items are now matched against a locally built index of the library: TMDB id first (exact), then title + year, then a normalized title (ignores case, accents, punctuation, and leading "The"/"A"/"An")
+- Every Movies / TV Shows *section* is searched, not just the first one — a server with "Movies", "One Piece Movies", "Family Videos" etc. previously only ever looked at one of them
+- **Create Plex Playlist now always replaces**: the playlist named after the list is deleted and rebuilt from the current list contents, no confirmation dialog
+- The new playlist is created *before* the old one is deleted, so a Plex error can't leave you with nothing
+- The export result reports how many items matched, which sections were searched, and by which method
 
 ### v1.6.3
 - Node 22 LTS base image (Node 20 reached end-of-life on 2026-04-30)
