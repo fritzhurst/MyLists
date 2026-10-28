@@ -7,7 +7,7 @@ import db from '../db.js';
 const router = Router();
 
 const PLEX_PRODUCT = 'MyLists';
-const PLEX_VERSION = '1.7.0';
+const PLEX_VERSION = '1.7.1';
 
 // Library index cache: key -> { at, index }
 const INDEX_TTL_MS = 10 * 60 * 1000;
@@ -446,12 +446,24 @@ router.post('/playlist', async (req, res) => {
   }
 
   const category = db.prepare(
-    'SELECT id, name, type FROM categories WHERE id = ? AND user_id = ?'
+    'SELECT id, name, type, plex_playlist_name FROM categories WHERE id = ? AND user_id = ?'
   ).get(categoryId, req.user.id);
 
   if (!category) return res.status(404).json({ error: 'List not found' });
   if (!['movies', 'tvshows'].includes(category.type)) {
     return res.status(400).json({ error: 'Only Movies and TV Shows lists can be exported to Plex' });
+  }
+
+  // Playlists are named after the list, so two lists with the same name would
+  // fight over one playlist — refuse rather than silently clobber the other.
+  const clash = db.prepare(
+    "SELECT name FROM categories WHERE user_id = ? AND id <> ? AND type IN ('movies','tvshows')"
+  ).all(req.user.id, category.id)
+    .find(c => normalizeTitle(c.name) === normalizeTitle(category.name));
+  if (clash) {
+    return res.status(409).json({
+      error: `Another list is also called "${clash.name}". Plex playlists are named after the list, so rename one of them first.`,
+    });
   }
 
   const items = db.prepare(
@@ -512,27 +524,50 @@ router.post('/playlist', async (req, res) => {
       });
     }
 
-    // Create the new playlist first, then remove the previous one(s) with the
-    // same name — if Plex refuses the new one, the old playlist survives.
-    const existing = await findPlaylists(base, activeToken, playlistName);
+    // Create the new playlist first, then remove the previous one(s) — the copy
+    // named after the list and, if the list was renamed since the last export,
+    // the copy under its old name. If Plex refuses the new one, the old survives.
+    const previousName =
+      category.plex_playlist_name &&
+      normalizeTitle(category.plex_playlist_name) !== normalizeTitle(playlistName)
+        ? category.plex_playlist_name
+        : null;
+
+    const candidates = [];
+    for (const name of previousName ? [playlistName, previousName] : [playlistName]) {
+      for (const p of await findPlaylists(base, activeToken, name)) {
+        if (!candidates.some(c => c.ratingKey === p.ratingKey)) candidates.push(p);
+      }
+    }
+
     const newKey = await createPlaylist(base, activeToken, machineId, playlistName, ratingKeys);
 
     let replacedCount = 0;
-    for (const old of existing) {
+    const removedNames = [];
+    for (const old of candidates) {
       if (old.ratingKey === newKey) continue;
-      if (await deletePlaylist(base, activeToken, old.ratingKey)) replacedCount += 1;
+      if (await deletePlaylist(base, activeToken, old.ratingKey)) {
+        replacedCount += 1;
+        if (normalizeTitle(old.title) !== normalizeTitle(playlistName)) removedNames.push(old.title);
+      }
     }
+
+    db.prepare(
+      'UPDATE categories SET plex_playlist_name = ?, plex_playlist_key = ? WHERE id = ?'
+    ).run(playlistName, newKey, category.id);
 
     indexCache.delete(`${base}|${sectionType}|${activeToken.slice(-8)}`);
 
     res.json({
       success: true,
       playlistName,
+      previousName,
       itemCount: ratingKeys.length,
       totalItems: items.length,
       notFound,
       replaced: replacedCount > 0,
       replacedCount,
+      removedNames,
       sections: index.sections.map(s => s.title),
       matchedBy,
     });

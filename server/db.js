@@ -44,6 +44,18 @@ if (!catColumns.find(c => c.name === 'type')) {
 if (!catColumns.find(c => c.name === 'user_id')) {
   db.exec("ALTER TABLE categories ADD COLUMN user_id INTEGER REFERENCES users(id)");
 }
+// Plex playlist bookkeeping: remember which playlist the app last built for a
+// list, so renaming a list can replace the old-named playlist instead of
+// orphaning it in Plex.
+if (!catColumns.find(c => c.name === 'plex_playlist_name')) {
+  db.exec("ALTER TABLE categories ADD COLUMN plex_playlist_name TEXT DEFAULT NULL");
+  // Every version up to 1.7.0 named the playlist after the list, so that is a
+  // safe starting point for existing lists.
+  db.exec("UPDATE categories SET plex_playlist_name = name WHERE type IN ('movies','tvshows')");
+}
+if (!catColumns.find(c => c.name === 'plex_playlist_key')) {
+  db.exec("ALTER TABLE categories ADD COLUMN plex_playlist_key TEXT DEFAULT NULL");
+}
 
 const userColumns = db.prepare("PRAGMA table_info(users)").all();
 if (!userColumns.find(c => c.name === 'tmdb_api_key')) {
