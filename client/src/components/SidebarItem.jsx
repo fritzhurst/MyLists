@@ -80,10 +80,26 @@ function SidebarItem({ category, isActive, onSelect, onDelete, onRename }) {
           onClick={(e) => e.stopPropagation()}
         />
       ) : (
-        <span className="sidebar-item-name" onDoubleClick={handleDoubleClick}>
+        <span
+          className="sidebar-item-name"
+          title="Double-click, or use the pencil, to rename"
+          onDoubleClick={handleDoubleClick}
+        >
           {typeIcons[category.type] || ''} {category.name}
         </span>
       )}
+      <button
+        className="sidebar-item-rename"
+        title="Rename list"
+        aria-label={`Rename ${category.name}`}
+        onClick={(e) => {
+          e.stopPropagation();
+          setEditName(category.name);
+          setEditing(true);
+        }}
+      >
+        &#x270E;
+      </button>
       <button className="sidebar-item-delete" onClick={handleDelete}>&times;</button>
     </div>
   );

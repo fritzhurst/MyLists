@@ -379,6 +379,12 @@ function PlexPlaylistModal({ categories, onClose }) {
                   ? ` from ${result.sections.length} Plex librar${result.sections.length === 1 ? 'y' : 'ies'}.`
                   : '.'}
               </p>
+              {result.removedNames && result.removedNames.length > 0 && (
+                <p className="plex-hint">
+                  Removed the old playlist{result.removedNames.length > 1 ? 's' : ''}{' '}
+                  {result.removedNames.map(n => `\u201c${n}\u201d`).join(', ')}.
+                </p>
+              )}
               {result.replaced && result.replacedCount > 1 && (
                 <p className="plex-hint">
                   Replaced {result.replacedCount} older playlists with this name.

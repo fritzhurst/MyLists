@@ -1,4 +1,4 @@
-# MyLists `v1.7.0`
+# MyLists `v1.7.1`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -269,6 +269,13 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.7.1
+- **Rename a list without leaving a stale playlist behind.** Every list now shows a pencil button on hover (double-clicking the name still works too). Renaming used to orphan the old Plex playlist, because the app could only find a playlist by the list's *current* name.
+- The app now records the name of the playlist it last built for each list (`categories.plex_playlist_name`). On the next **Create Plex Playlist** the playlist under the old name is deleted as well, so a rename moves the playlist instead of duplicating it.
+- The export result screen reports `Removed the old playlist “Old Name”` when a rename was picked up.
+- Two lists with the same name now get a clear refusal instead of one list silently deleting the other's playlist.
+- Existing Movies/TV lists are seeded with their current name on upgrade, so renames work on the first export after updating.
 
 ### v1.7.0
 - **Create Plex Playlist works again.** The app called Plex's per-section `/library/sections/{key}/search` endpoint, which modern Plex Media Server rejects with `400 Bad Request` — so every lookup failed and every export ended in "None of the items in your list were found in the Plex library."
