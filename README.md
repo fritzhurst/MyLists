@@ -1,4 +1,4 @@
-# MyLists `v1.5.3`
+# MyLists `v1.6.3`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -269,6 +269,20 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.6.3
+- Node 22 LTS base image (Node 20 reached end-of-life on 2026-04-30)
+- multer `^2.5.0` — clears four HIGH and two lower-severity advisories (multipart field-name DoS, file-size limit bypass)
+- Commit `package-lock.json` for server and client; the Dockerfile now uses `npm ci`, so image builds are reproducible instead of resolving `^` ranges fresh on every build
+- Includes the Open Library `User-Agent` fix from master (book search/detail lookups were being throttled)
+
+### v1.6.2
+- Require `JWT_SECRET` at startup — no silent fallback secret
+- Force an admin password change on first login
+- Rate-limit login attempts
+
+### v1.6.1
+- Create a Plex playlist directly from a Movies or TV Shows list
 
 ### v1.5.3
 - SVG favicon with full-bleed background — eliminates white space on Android adaptive icons
