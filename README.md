@@ -1,4 +1,4 @@
-# MyLists `v1.7.2`
+# MyLists `v1.7.3`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -270,6 +270,10 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.7.3
+- **Fix: two rows showed "#1" after adding an item.** The `#` column was rendered from each row's stored `sort_order`, and inserting at the top shifts every other row's `sort_order` by one. The rows already loaded in the browser kept their pre-shift values until the next refetch, so the new item (`sort_order 0`, shown as `#1`) and the old first item (still `sort_order 0` in memory, also `#1`) both read as #1 and the rest of the column was one behind.
+- The badge is now derived from the row's position in the list, never from `sort_order`, so it is correct on the first render after an add and cannot repeat.
 
 ### v1.7.2
 - **New entries go to the top of the list.** Adding an item used to append it to the bottom (`sort_order = MAX + 1`); it now inserts at position 0 and pushes the rest down one slot, in a single SQLite transaction. Adding a book to a 200-item list no longer means scrolling to the end to find it.

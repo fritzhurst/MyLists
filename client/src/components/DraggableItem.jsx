@@ -49,6 +49,7 @@ function DraggableItem({ item, priority, categoryType, onDelete, onUpdateItem, d
   const thumbUrl = item.metadata?.thumbnailUrl || item.metadata?.posterUrl;
   const isSpecialized = categoryType !== 'generic';
 
+  // ListContainer always supplies the 1-based position; sort_order is only a fallback
   const displayPriority = priority != null ? priority : (item.sort_order + 1);
 
   const formattedDate = item.created_at
