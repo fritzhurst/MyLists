@@ -105,7 +105,7 @@ function App() {
   const handleAddItem = useCallback(async (text, metadata) => {
     if (activeCategoryId == null) return;
     const item = await api.createItem(activeCategoryId, text, metadata || null);
-    setItems((prev) => [...prev, item]);
+    setItems((prev) => [item, ...prev]);
   }, [activeCategoryId]);
 
   const handleUpdateItem = useCallback(async (id, text, metadata) => {
