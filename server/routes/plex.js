@@ -7,7 +7,7 @@ import db from '../db.js';
 const router = Router();
 
 const PLEX_PRODUCT = 'MyLists';
-const PLEX_VERSION = '1.7.2';
+const PLEX_VERSION = '1.7.3';
 
 // Library index cache: key -> { at, index }
 const INDEX_TTL_MS = 10 * 60 * 1000;

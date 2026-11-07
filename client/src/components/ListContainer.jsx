@@ -72,7 +72,11 @@ function ListContainer({ items, categoryType, onAddItem, onDeleteItem, onUpdateI
     setSortBy('manual');
   };
 
-  // Map item id to its manual sort position (1-based), locked during non-manual sorts
+  // Map item id to its manual sort position (1-based), locked during non-manual sorts.
+  // The # badge is rendered from this position — in manual mode that is the array
+  // index — never from item.sort_order. Adding an item shifts every stored
+  // sort_order by one, but the rows already held in state keep their pre-shift
+  // values until a refetch, which is what made two rows both display "#1".
   const manualOrderMap = useMemo(() => {
     const map = {};
     items.forEach((item, idx) => { map[item.id] = idx + 1; });
@@ -128,11 +132,11 @@ function ListContainer({ items, categoryType, onAddItem, onDeleteItem, onUpdateI
         onDragEnd={handleDragEnd}
       >
         <SortableContext items={displayItems} strategy={verticalListSortingStrategy}>
-          {displayItems.map((item) => (
+          {displayItems.map((item, index) => (
             <DraggableItem
               key={item.id}
               item={item}
-              priority={isDragDisabled ? manualOrderMap[item.id] : null}
+              priority={manualOrderMap[item.id] ?? index + 1}
               categoryType={categoryType}
               onDelete={onDeleteItem}
               onUpdateItem={onUpdateItem}
