@@ -15,6 +15,16 @@ function ownsCategory(categoryId, userId) {
   return db.prepare('SELECT id FROM categories WHERE id = ? AND user_id = ?').get(categoryId, userId);
 }
 
+// New entries land at the top of the list: every existing row moves down one
+// slot and the new row takes sort_order 0. Both statements run in one
+// transaction so a failed insert can never leave numbers shifted with a gap.
+const insertAtTop = db.transaction((categoryId, text, metadataJson) => {
+  db.prepare('UPDATE items SET sort_order = sort_order + 1 WHERE category_id = ?').run(categoryId);
+  return db.prepare(
+    "INSERT INTO items (category_id, text, sort_order, metadata, created_at) VALUES (?, ?, 0, ?, datetime('now'))"
+  ).run(categoryId, text, metadataJson).lastInsertRowid;
+});
+
 // GET /api/categories/:categoryId/items — list items for a category
 router.get('/:categoryId/items', (req, res) => {
   const { categoryId } = req.params;
@@ -55,10 +65,9 @@ router.post('/:categoryId/items', (req, res) => {
   }
 
   const metadataJson = metadata ? JSON.stringify(metadata) : null;
-  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM items WHERE category_id = ?').get(categoryId);
-  const result = db.prepare("INSERT INTO items (category_id, text, sort_order, metadata, created_at) VALUES (?, ?, ?, ?, datetime('now'))").run(categoryId, text.trim(), maxOrder.max_order + 1, metadataJson);
+  const newId = insertAtTop(categoryId, text.trim(), metadataJson);
 
-  const item = db.prepare('SELECT * FROM items WHERE id = ?').get(result.lastInsertRowid);
+  const item = db.prepare('SELECT * FROM items WHERE id = ?').get(newId);
   if (item.metadata) item.metadata = JSON.parse(item.metadata);
   res.status(201).json(item);
 });

@@ -1,4 +1,4 @@
-# MyLists `v1.7.1`
+# MyLists `v1.7.2`
 
 A Dockerized list management web app with category tabs and drag-and-drop reordering. Includes specialized list types for **Books**, **Movies**, and **TV Shows** with type-ahead search, cover art, and metadata popover cards.
 
@@ -15,6 +15,7 @@ A Dockerized list management web app with category tabs and drag-and-drop reorde
   - **TV Shows** — Type-ahead search via TMDB. Displays poster, creator, network, seasons, episodes, status, and rating on hover.
 - **Generic Lists** — Plain text lists for anything else (groceries, to-dos, etc.)
 - **Item Notes & Attachments** — Click an item to add text notes and file attachments
+- **New Entries on Top** — Adding an item puts it at the top of the list instead of the bottom; everything already on the list keeps its place
 - **Sorting** — Manual drag, date added, or release date; renumber to lock sort order
 - **Mobile Responsive** — Sidebar overlay, tap drag handle for metadata popover, dates shown below items
 - **Settings** — Users can change their password and set a personal TMDB API key
@@ -221,7 +222,7 @@ docker compose down -v
 | DELETE | `/api/categories/:id` | Delete category + items |
 | PUT    | `/api/categories/reorder` | Reorder categories `{ orderedIds: [...] }` |
 | GET    | `/api/categories/:id/items` | List items for a category |
-| POST   | `/api/categories/:id/items` | Add item `{ text, metadata }` |
+| POST   | `/api/categories/:id/items` | Add item `{ text, metadata }` — inserted at the top of the list |
 | PUT    | `/api/items/:id` | Update item text `{ text }` |
 | DELETE | `/api/items/:id` | Delete an item |
 | PUT    | `/api/categories/:id/items/reorder` | Reorder items `{ orderedIds: [...] }` |
@@ -269,6 +270,11 @@ MyLists/
 ```
 
 ## Changelog
+
+### v1.7.2
+- **New entries go to the top of the list.** Adding an item used to append it to the bottom (`sort_order = MAX + 1`); it now inserts at position 0 and pushes the rest down one slot, in a single SQLite transaction. Adding a book to a 200-item list no longer means scrolling to the end to find it.
+- The position is applied server-side, so it holds on every client and survives a reload. A manual drag can still put the item anywhere afterwards, and "date added" sorting is unchanged.
+- The new item also appears at the top immediately in the UI, without waiting for a refetch.
 
 ### v1.7.1
 - **Rename a list without leaving a stale playlist behind.** Every list now shows a pencil button on hover (double-clicking the name still works too). Renaming used to orphan the old Plex playlist, because the app could only find a playlist by the list's *current* name.
